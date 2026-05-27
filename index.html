@@ -33,7 +33,6 @@
         .preview-top-split { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 5px; width: 100%; }
         .preview-left-text { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; }
         
-        /* MODIFIERAD: Ikonen har gjorts större (105px) och sträcker sig nu värdigt nedåt */
         .img-avatar-frame { width: 105px; height: 105px; background: #111122; border: 2px solid #ffff55; box-shadow: 2px 2px 0px #000; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; image-rendering: pixelated; }
         .img-avatar-frame img { width: 100%; height: 100%; object-fit: cover; }
         
@@ -173,7 +172,7 @@
 
         <div id="screen-result" class="screen hidden" style="text-align: center; justify-content: center; align-items: center; gap: 5px; overflow-y: auto; padding: 10px 0;">
             <h1 id="result-header" style="font-size: 32px; margin-bottom: 2px;">VIKTORIA!</h1>
-            <p id="result-text" style="font-size: 14px; max-width: 600px; color: #ccc; margin-bottom: 2px;"></p>
+            <p id="result-text" style="font-size: 14px; max-width: 600px; color: #ccc; margin-bottom: 2px Papal;"></p>
             <h2 id="final-score-display" style="color: #ffff55; font-size: 22px; margin-bottom: 5px;">POÄNG: 0</h2>
             
             <div class="leaderboard-container">
@@ -315,13 +314,32 @@
             });
         }
 
+        // --- DYNAMISK STRÄNGGENERATOR FÖR HÖGSTA ATTRIBUTET ---
+        function getHighestStatText(c) {
+            let stats = [
+                { name: "Logik", val: c.logos },
+                { name: "Andlighet", val: c.pathos },
+                { name: "Organisation", val: c.mgmt },
+                { name: "Rättvisa", val: c.justice }
+            ];
+            // Sorterar så att den högsta statten hamnar först i listan
+            stats.sort((a, b) => b.val - a.val);
+            return `Styrka: ${stats[0].name} ${stats[0].val}`;
+        }
+
         function renderRoster() {
             const list = document.getElementById('roster-list'); list.innerHTML = '';
             roster.forEach(c => {
                 let high = (c.logos>=80?1:0)+(c.pathos>=80?1:0)+(c.dogma>=80?1:0)+(c.mgmt>=80?1:0)+(c.justice>=80?1:0)+(c.cha>=80?1:0);
                 const mantle = high >= 2;
                 const card = document.createElement('div'); card.className = `char-card ${mantle ? 'mantle' : ''}`; card.id = `roster-char-${c.id}`;
-                card.innerHTML = `<strong style="color:#ffff55;">${c.name}</strong><br>Logik:${c.logos} | Andlighet:${c.pathos}<br>Kostnad: <strong>${c.cost} TK</strong>`;
+                
+                // MODIFIERAD: Skriver nu enbart ut Namn, Dynamiskt Högsta Stat och Kostnad (TK) för maximal scannbarhet
+                card.innerHTML = `
+                    <strong style="color:#ffff55; font-size:13px;">${c.name}</strong><br>
+                    <span style="opacity:0.9;">${getHighestStatText(c)}</span><br>
+                    Kostnad: <strong>${c.cost} TK</strong>
+                `;
                 card.onclick = () => loadPreview(c, mantle);
                 list.appendChild(card);
             });
