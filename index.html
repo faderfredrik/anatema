@@ -7,41 +7,58 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
         body { background-color: #0b0b16; color: #ffffff; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; }
-        .jrpg-window { background: linear-gradient(180deg, #0000a0 0%, #000040 100%); border: 4px solid #ffffff; box-shadow: 0 0 0 4px #000000, inset 0 0 0 2px #000000; border-radius: 4px; padding: 20px; width: 95vw; max-width: 1200px; min-height: 80vh; display: flex; flex-direction: column; }
+        
+        .jrpg-window { background: #000040; background: linear-gradient(180deg, #0000a0 0%, #000040 100%); border: 4px solid #ffffff; box-shadow: 0 0 0 4px #000000, inset 0 0 0 2px #000000; border-radius: 4px; padding: 20px; width: 95vw; max-width: 1200px; min-height: 80vh; display: flex; flex-direction: column; }
         h1, h2, h3, h4 { color: #ffff55; text-transform: uppercase; text-shadow: 2px 2px #000000; margin-bottom: 15px; letter-spacing: 2px; }
-        .screen { display: flex; flex-direction: column; flex-grow: 1; }
+        
+        .screen { display: flex; flex-direction: column; flex-grow: 1; background: transparent; }
         .hidden { display: none !important; }
+        
         button { background-color: #000080; color: #ffffff; border: 2px solid #ffffff; padding: 10px 20px; font-size: 14px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin: 4px; transition: all 0.2s; text-align: left; }
         button:hover:not(:disabled) { background-color: #ffff55; color: #000000; border-color: #000000; }
         button:disabled { opacity: 0.4; cursor: not-allowed; border-color: #888888; }
-        input[type="text"] { background-color: #000; color: #fff; border: 2px solid #fff; padding: 10px; font-size: 16px; font-family: inherit; font-weight: bold; width: 100%; max-width: 300px; margin-bottom: 15px; text-transform: uppercase; }
+        
+        .start-input { background-color: #000; color: #fff; border: 2px solid #fff; padding: 10px; font-size: 16px; font-family: inherit; font-weight: bold; width: 100%; max-width: 300px; margin-bottom: 15px; text-transform: uppercase; display: inline-block; }
+        
         .heresy-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 15px; }
         .heresy-card { border: 2px solid #ffffff; padding: 15px; background: rgba(0, 0, 0, 0.4); cursor: pointer; }
         .heresy-card:hover { border-color: #ffff55; background: rgba(255, 255, 85, 0.1); }
-        .synod-layout { display: grid; grid-template-columns: 1.1fr 0.8fr; gap: 20px; flex-grow: 1; }
-        .roster-scroll { max-height: 55vh; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; padding-right: 10px; }
-        .char-card { border: 2px solid #aaaaaa; padding: 10px; background: rgba(0,0,0,0.3); cursor: pointer; font-size: 12px; }
+        
+        .synod-layout { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px; height: 62vh; }
+        .tab-container { display: flex; gap: 5px; margin-bottom: 10px; border-bottom: 2px solid #fff; padding-bottom: 5px; flex-shrink: 0; }
+        .tab-btn { background: #000040; border: 1px solid #fff; padding: 8px 12px; font-size: 12px; color: #fff; cursor: pointer; }
+        .tab-btn.active { background: #ffff55; color: #000; font-weight: bold; border-bottom: none; }
+        
+        .roster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; overflow-y: auto; flex-grow: 1; padding-right: 5px; }
+        
+        .char-card { border: 2px solid #aaaaaa; padding: 10px; background: rgba(0,0,0,0.3); cursor: pointer; font-size: 12px; line-height: 1.3; }
         .char-card:hover { border-color: #ffff55; }
         .char-card.selected { border-color: #00ff00; background: rgba(0, 255, 0, 0.1); }
-        .char-card.mantle { border-style: dashed; }
-        .panel-right { border-left: 2px solid #ffffff; padding-left: 20px; display: flex; flex-direction: column; justify-content: space-between; }
-        .squad-slots-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px; }
-        .squad-slot { background: rgba(0,0,0,0.5); border: 1px solid #888; padding: 8px; font-size: 11px; text-align: center; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
-        .squad-slot.filled { border-color: #00ff00; color: #00ff00; background: rgba(0, 150, 0, 0.2); font-weight: bold; }
         
-        .preview-box { background: rgba(0,0,0,0.5); border: 2px solid #ffffff; padding: 15px; flex-grow: 1; margin-bottom: 15px; display: flex; flex-direction: column; overflow-y: auto; max-height: 42vh; }
-        .preview-top-split { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 5px; width: 100%; }
-        .preview-left-text { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; }
+        .panel-left { display: flex; flex-direction: column; height: 100%; }
+        .squad-synergy-zone { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; padding-top: 15px; border-top: 2px dashed rgba(255,255,255,0.3); flex-shrink: 0; }
+        .squad-vertical-list { display: flex; flex-direction: column; gap: 5px; }
+        .squad-item { background: rgba(0,0,0,0.4); border: 1px solid #888; padding: 8px; font-size: 12px; min-height: 38px; display: flex; align-items: center; }
+        .squad-item.filled { color: #00ff00; border-color: #00ff00; font-weight: bold; }
+        
+        .synergy-box { background: rgba(255, 255, 85, 0.05); border: 1px solid #ffff55; padding: 10px; min-height: 165px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+        .synergy-item { font-size: 11px; color: #ffff55; border-bottom: 1px solid rgba(255,255,85,0.2); padding-bottom: 4px; line-height: 1.3; }
+
+        .panel-right { border-left: 2px solid #ffffff; padding-left: 20px; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+        .preview-box { background: rgba(0,0,0,0.5); border: 2px solid #ffffff; padding: 15px; flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; margin-bottom: 15px; min-height: 0; }
+        
+        .preview-top-split { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 5px; width: 100%; flex-shrink: 0; }
+        .preview-left-text { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; word-wrap: break-word; }
         
         .img-avatar-frame { width: 105px; height: 105px; background: #111122; border: 2px solid #ffff55; box-shadow: 2px 2px 0px #000; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; image-rendering: pixelated; }
-        .img-avatar-frame img { width: 100%; height: 100%; object-fit: cover; }
-        
+        .img-avatar-frame img { width: 100%; height: 100%; object-fit: cover; border: none; background: transparent; }
         .preview-stats-list { margin: 6px 0; font-size: 11px; line-height: 1.4; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 6px; }
+        
         .battle-arena { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px; flex-grow: 1; }
         .battle-log { background-color: #000000; border: 2px solid #ffffff; padding: 15px; height: 230px; overflow-y: auto; font-size: 13px; line-height: 1.5; color: #55ff55; margin-top: 10px; }
         .battle-hud { display: flex; flex-direction: column; gap: 10px; }
         .entity-row { background: rgba(0,0,0,0.5); border: 1px solid #ffffff; padding: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .pillar-row { background: rgba(40, 0, 0, 0.4); border: 1px dashed #ff5555; padding: 6px 10px; margin-bottom: 4px; display: flex; justify-content: space-between; font-size: 12px; }
+        .pillar-row { background: rgba(40, 0, 0, 0.4); border: 1px dashed #ff5555; padding: 6px 10px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
         .entity-row.active-turn { border: 2px solid #ffff55; background: rgba(255, 255, 85, 0.1); }
         .hp-bar-container { width: 130px; background-color: #550000; border: 1px solid #ffffff; height: 14px; display: inline-block; margin-left: 10px; }
         .hp-bar { background-color: #00ff00; height: 100%; width: 100%; transition: width 0.3s; }
@@ -52,9 +69,12 @@
         .leaderboard-box { background: rgba(0,0,0,0.4); border: 1px solid #fff; padding: 10px; font-size: 12px; }
         .leaderboard-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
         .leaderboard-table th, .leaderboard-table td { padding: 4px; border-bottom: 1px dashed rgba(255,255,255,0.2); }
+        
         .text-highlight { color: #ffff55; }
         .text-danger { color: #ff5555; }
         .text-cyan { color: #55ffff; }
+        .text-quote { color: #55ffff; font-style: italic; }
+        
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
         ::-webkit-scrollbar-thumb { background: #ffffff; border-radius: 4px; }
@@ -67,14 +87,13 @@
         <div id="screen-start" class="screen">
             <h2>Projekt Anatema</h2>
             <div style="background:rgba(0,0,0,0.4); border:2px dashed #fff; padding:20px; font-size:14px; line-height:1.6; margin-bottom:20px; max-width:800px; align-self:center;">
-                <p>Välkommen, apologet! Du är kallad för en tid som denna. Världen utmanas av heretiska massrörelser som förvränger skrifterna och villseleder folket, men kyrkomötet är sammankallat och redo att svara.</p><br>
+                <p>Välkommen, apologet! Du är kallad för en tid som denna. Världen utmanas av heretiska massrörelser som förvränger skrifterna och villseleder folket, men kyrkomötet är sammankallat och ready att svara.</p><br>
                 <p>Ditt uppdrag är att kliva in i Synoden för att rekrytera en trupp av teologer från hela kyrkohistorien. Förvalta ditt Teologiska Kapital (TK) väl och sätta ihop en samspelt motståndsrörelse. I striden mot heresierna behöver du omvända <strong class="text-highlight">Massorna</strong>, sabotera heresins <strong class="text-highlight">Struktur</strong> och underminera dess <strong class="text-highlight">Legitimitet</strong>, för att blotta kätteriets <strong class="text-highlight">Kärna</strong> och attackera den med <strong class="text-highlight">Logos</strong>. Därför behöver du tänka på dina teologer förmågor, men också på deras svagheter. Heresin kommer inte att sky några medel för att förgöra er!</p><br>
-                <p>Gör dig redo att träda in i Synoden.</p><br>
                 <p style="text-align:center; font-size:16px; font-weight:bold; letter-spacing:3px;" class="text-highlight">IN HOC SIGNO VINCES!</p>
             </div>
             <div style="text-align:center; margin-top:10px;">
                 <label style="font-weight:bold; color:#ffff55; display:block; margin-bottom:8px;">SKRIV DITT NAMN I HISTORIEBÖCKERNA:</label>
-                <input type="text" id="player-name-input" placeholder="DITT NAMN" maxLength="15"><br>
+                <input type="text" id="player-name-input" class="start-input" placeholder="DITT NAMN" maxLength="15"><br>
                 <button onclick="submitPlayerName()" style="text-align:center; font-size:16px; padding:12px 30px; align-self:center; display:inline-block;">Träd in i Synoden &rarr;</button>
             </div>
         </div>
@@ -86,32 +105,51 @@
         </div>
 
         <div id="screen-synod" class="screen hidden">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                 <h2>Synoden (Truppbygge)</h2>
-                <h3 id="budget-display">Budget: 500 / 500 TK</h3>
+                <h3 id="budget-display" class="text-highlight">Budget: 500 / 500 TK</h3>
             </div>
-            <p style="margin-bottom: 15px;" id="scenario-brief"></p>
+            <p style="margin-bottom: 10px; font-size:12px;" id="scenario-brief"></p>
+            
             <div class="synod-layout">
-                <div class="roster-scroll" id="roster-list"></div>
-                <div class="panel-right">
-                    <div>
-                        <h4 style="margin-bottom:8px;">Aktuell Squad (Max 4)</h4>
-                        <div class="squad-slots-grid" id="squad-slots-container"></div>
-                        <h4>Inspektion</h4>
-                        <div class="preview-box" id="char-preview-zone">
-                            <p style="opacity:0.5; font-style:italic; font-size:12px;">Klicka på en försvarare i listan för att expandera förhandsvisning, läsa bio, se RPG-porträtt och lägga till i din squad.</p>
+                <div class="panel-left">
+                    <div class="tab-container" id="tab-buttons">
+                        <button class="tab-btn active" onclick="setTab('monastisk')">Monastiker</button>
+                        <button class="tab-btn" onclick="setTab('skolastisk')">Skolastiker</button>
+                        <button class="tab-btn" onclick="setTab('kyrkoledare')">Kyrkoledare</button>
+                        <button class="tab-btn" onclick="setTab('evangelisk')">Evangelister</button>
+                    </div>
+
+                    <div class="roster-grid" id="roster-list"></div>
+
+                    <div class="squad-synergy-zone">
+                        <div>
+                            <h4>Aktuell Squad (Max 4)</h4>
+                            <div class="squad-vertical-list" id="squad-list-display"></div>
+                        </div>
+                        <div>
+                            <h4>Aktiva Synergier</h4>
+                            <div class="synergy-box" id="synergy-display">
+                                <p style="opacity:0.5; font-size:11px; margin:auto;">Inga synergier aktiverade.</p>
+                            </div>
                         </div>
                     </div>
-                    <div style="display:flex; gap:5px;">
-                        <button onclick="changeScreen('disputation')" style="flex:1; text-align:center;">Avbryt</button>
-                        <button id="start-battle-btn" disabled onclick="initBattle()" style="flex:1; text-align:center;">Starta strid</button>
+                </div>
+
+                <div class="panel-right">
+                    <div class="preview-box" id="char-preview-zone">
+                        <p style="opacity:0.5; font-style:italic; font-size:12px; margin:auto; text-align:center;">Klicka på en apologet i listan för att inspektera stats, läsa biografi och lägga till i din squad.</p>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:5px; width:100%; flex-shrink: 0;">
+                        <button id="start-battle-btn" disabled onclick="initBattle()" style="text-align:center; font-size:14px; padding:12px; font-weight:bold; width:100%;">STARTA STRID &rarr;</button>
+                        <button onclick="changeScreen('disputation')" style="text-align:center; background:transparent; border-color:#888; font-size:11px; padding:6px; width:100%;">Avbryt / Byt scen</button>
                     </div>
                 </div>
             </div>
         </div>
 
         <div id="screen-battle" class="screen hidden">
-            <h2 id="battle-title">Teologisk strid</h2>
+            <h2>Teologisk strid</h2>
             <div class="battle-arena">
                 <div style="display: flex; flex-direction: column;">
                     <div class="entity-row" style="background: rgba(150,0,0,0.3); border-bottom: none; padding-bottom: 2px; cursor: default;">
@@ -156,7 +194,8 @@
                             <button onclick="executePlayerAction('massorna')">👥 Pathos-vädjan &rarr; Splittra MASSORNA</button>
                             <button onclick="executePlayerAction('strukturen')">⚙️ Logistiskt ingrepp &rarr; Sabotera STRUKTUREN</button>
                             <button onclick="executePlayerAction('legitimiteten')">⚖️ Rättvisekritik &rarr; Sänk LEGITIMITETEN</button>
-                            <button onclick="executePlayerAction('heal')" style="color:#55ff55;">❤️ Andlig tröst &rarr; Hela svagaste teolog</button>
+                            <button onclick="executePlayerAction('heal')" style="color:#55ff55;">❤️ Helig olja &rarr; Smörj med Pathos</button>
+                            <button onclick="executePlayerAction('shield')" style="color:#55ffff;">🛡️ Trons sköld &rarr; Skydda med Dogma</button>
                         </div>
                     </div>
                 </div>
@@ -170,10 +209,10 @@
             <button onclick="startNextWave()" style="align-self: center; font-size: 20px; padding: 15px 30px; text-align: center;">Gå till nästa rond</button>
         </div>
 
-        <div id="screen-result" class="screen hidden" style="text-align: center; justify-content: center; align-items: center; gap: 5px; overflow-y: auto; padding: 10px 0;">
-            <h1 id="result-header" style="font-size: 32px; margin-bottom: 2px;">VIKTORIA!</h1>
-            <p id="result-text" style="font-size: 14px; max-width: 600px; color: #ccc; margin-bottom: 2px Papal;"></p>
-            <h2 id="final-score-display" style="color: #ffff55; font-size: 22px; margin-bottom: 5px;">POÄNG: 0</h2>
+        <div id="screen-result" class="screen hidden" style="text-align: center; justify-content: center; align-items: center; gap: 5px;">
+            <h1 id="result-header" style="font-size: 32px;">VIKTORIA!</h1>
+            <p id="result-text" style="font-size: 14px; max-width: 600px; color: #ccc; margin-bottom: 10px;"></p>
+            <h2 id="final-score-display" style="color: #ffff55; font-size: 22px; margin-bottom: 15px;">POÄNG: 0</h2>
             
             <div class="leaderboard-container">
                 <div class="leaderboard-box">
@@ -191,7 +230,7 @@
                     </table>
                 </div>
             </div>
-            <button onclick="changeScreen('disputation')" style="font-size: 14px; text-align: center; margin-top: 10px;">Starta ny disputation</button>
+            <button onclick="changeScreen('disputation')" style="font-size: 14px; text-align: center; margin-top: 15px;">Starta ny disputation</button>
         </div>
 
     </div>
@@ -203,63 +242,67 @@
             { id: "arianism", name: "Arianismen", boss: "Arius", waves: 1, attack: 72, weak: "Hög Logos", desc: "Enormt folkligt stöd (Massorna) ökar heresins skada dramatiskt.", pLar: 200, pMas: 120, pStr: 50, pLeg: 30 },
             { id: "pelagianism", name: "Pelagianismen", boss: "Pelagius", waves: 1, attack: 65, weak: "Justice", desc: "Hög egenmoral (Legitimitet) gör Läran totalt immun mot skada från start.", pLar: 100, pMas: 40, pStr: 30, pLeg: 150 },
             { id: "donatism", name: "Donatismen", boss: "Donatus Magnus", waves: 1, attack: 68, weak: "Justice", desc: "Ockuperar basilikor (Strukturen) och krossar truppens Management/Logistik.", pLar: 140, pMas: 70, pStr: 80, pLeg: 60 },
-            { id: "double_wave_1", name: "Rituella Strider (2 ronder)", boss: "Kejsar Leo III", waves: 2, waveBosses: ["Kejsar Leo III", "Biskop Johannes av Venedig"], attack: 70, weak: "Mgmt/Init", desc: "Våg 1: Ikonoklasmen (Strukturen helar), Våg 2: Det trilinguala heresiet (Sänker Init).", pLar: 160, pMas: 30, pStr: 130, pLeg: 50 },
+            { id: "double_wave_1", name: "Rituella Strider (2 ronder)", boss: "Kejsar Leo III", waves: 2, waveBosses: ["Kejsar Leo III", "Biskop Johannes av Venedig"], attack: 70, weak: "Mgmt/Init", desc: "Våg 1: Ikonoklasmen (Strukturen helar), Våg 2: Det trilinguala heresiet.", pLar: 160, pMas: 30, pStr: 130, pLeg: 50 },
             { id: "katarerna", name: "Katarerna", boss: "Papa Niketas", waves: 1, attack: 72, weak: "Pathos", desc: "Extrem asketism (Massorna) halverar effekten av dina teologers healing.", pLar: 180, pMas: 90, pStr: 40, pLeg: 90 },
             { id: "valdensianism", name: "Valdensianismen", boss: "Peter Waldo", waves: 1, attack: 74, weak: "Management", desc: "Underjordiska nätverk (Strukturen) helar och bygger upp Massorna varje runda.", pLar: 150, pMas: 80, pStr: 100, pLeg: 60 },
             { id: "double_wave_2", name: "Moderna Vågor (2 ronder)", boss: "Voltaire", waves: 2, waveBosses: ["Voltaire", "Richard Dawkins"], attack: 75, weak: "Justice/Pathos", desc: "Våg 1: Voltaire sänker Dogma. Våg 2: Richard Dawkins skapar medial storm (Förvirring).", pLar: 160, pMas: 60, pStr: 50, pLeg: 110 }
         ];
 
         const roster = [
-            { id: 1, name: "Justinus Martyren", logos: 88, pathos: 50, dogma: 65, init: 70, fysik: 45, mgmt: 30, justice: 65, cha: 65, cost: 70, img: "icons/justinus.png", bio: "En av kyrkohistoriens absolut tidigaste filosofer som använde grekiska begrepp för att försvara sanningen inför hedniska kejsare.", sbd: "Bidrar med spelets absolut högsta grundsnabbhet vilket låter truppen stega fram med blixtsnabba motarguments-volymer.", hiD: "Sanningen kräver mitt blod!", hiB: "Filosofins mantel håller!", q: ["Sanningen tillhör oss kristna.", "Guds Logos har blivit kött."] },
-            { id: 2, name: "Irenaeus av Lyon", logos: 82, pathos: 60, dogma: 90, init: 38, fysik: 55, mgmt: 75, justice: 50, cha: 70, cost: 86, img: "icons/irenaeus.png", bio: "Den store biskopen som systematiskt kartlade och krossade gnostikernas dolda kätterier genom skrifternas fasta enhet.", sbd: "Erbjuder ett monumentalt mentalt försvar (Dogma) och en bastant sköld som säkrar truppen mot löpande dräneringseffekter.", hiD: "Traditionens kedja darrar!", hiB: "Gnostikernas lögner studsar bort!", q: ["Gud blev människa för att vi ska förgudas.", "Kyrkans lära är en och fast."] },
-            { id: 3, name: "Tertullianus", logos: 79, pathos: 75, dogma: 58, init: 88, fysik: 60, mgmt: 20, justice: 78, cha: 65, cost: 85, img: "icons/tertullianus.png", bio: "Skarp nordafrikansk jurist känd för sin kompromisslösa och bitande försvarsretorik.", sbd: "Levererar förödande skada och högt initiativ som snabbt bryter ner heresins moraliska sköldar i stridens tidiga skede.", hiD: "Vad har Aten med Jerusalem att göra?!", hiB: "Retoriken krossar kättarna!", q: ["De kristnas blod är ett utsäde.", "Jag tror, emedan det är orimligt."] },
-            { id: 4, name: "Origenes", logos: 95, pathos: 40, dogma: 45, init: 60, fysik: 70, mgmt: 40, justice: 50, cha: 60, cost: 80, img: "icons/origenes.png", bio: "Ett akademiskt geni som lade grunden för den tidiga bibelforskningen och den djupa allegoriska textkritiken.", sbd: "Producerar en helt enorm intellektuell skada (Logos) som kan strimla heresiens centrala lära så fort sköldarna har fallit.", hiD: "Mina skrifter brinner under pressen!", hiB: "Själens allegoriska eld absorberar smällen!", q: ["Skriften har tre djupa nivåer.", "Guds Logos rensar allt förnuft."] },
-            { id: 5, name: "Antiokus", logos: 20, pathos: 80, dogma: 92, init: 40, fysik: 85, mgmt: 10, justice: 35, cha: 75, cost: 76, img: "icons/antiokus.png", bio: "En stoisk och klippfast herde som vaktade katedralernas murar mot splittring.", sbd: "Fungerar som en ultimat skadesvamp med extremt hög hälsa och Dogma som tar smällen för lagets mer bräckliga nukes.", hiD: "Mina murar börjar rämna!", hiB: "Står pall som en tjock, murad fästning!", q: ["Behåll traditionen oskadd.", "Kyrkan står fast i stormen."] },
-            { id: 6, name: "Athanasius", logos: 85, pathos: 70, dogma: 98, init: 35, fysik: 80, mgmt: 82, justice: 65, cha: 88, cost: 121, img: "icons/athanasius.png", bio: "Mannen som stod ensam mot hela världen (Contra Mundum) under de våldsamma arianska krisen.", sbd: "Enastående ledarskaps-stats och nästintill ogenomträngligt Dogma-skydd som gör honom till den ultimata ankarpunkten.", hiD: "Är hela världen emot mig?!", hiB: "Nicaeas tro rubbas aldrig en tum!", q: ["Gud blev vad vi är för att göra oss till vad han är.", "Arius splittrar kyrkans enhet!"] },
-            { id: 7, name: "Amma Synkletika", logos: 35, pathos: 85, dogma: 94, init: 40, fysik: 75, mgmt: 45, justice: 55, cha: 80, cost: 84, img: "icons/ammasynkletika.png", bio: "En berömd ökenmoder som övergav sin rikedom för bön, tystnad och andlig krigföring i Egyptens ödemarker.", sbd: "Ger truppen en massiv andlig barriär och skyddar lagets hälsa genom en stabiliserande och orubblig närvaro.", hiD: "Min asketiska kropp sviktar!", hiB: "Hennes djupa inre ökenfrid rubbas icke!", q: ["Vaka över dina tankar.", "Bönen är själens trygga ankare."] },
-            { id: 8, name: "Hieronymus", logos: 90, pathos: 45, dogma: 78, init: 40, fysik: 65, mgmt: 40, justice: 45, cha: 55, cost: 72, img: "icons/hieronymus.png", bio: "Den temperamentsfulle eremiten som ensam översatte hela den hebreiska bibeln till latisk folktext (Vulgata).", sbd: "Genererar stark, ren biblisk skada mot heresins centrala texter och dekreter tack vare sin djupa lingvistiska insikt.", hiD: "Min vassa penna brister!", hiB: "Vulgatans latinska sköld står emot stormen!", q: ["Att inte känna skrifterna är att inte känna Kristus.", "Min heliga vrede kokar!"] },
-            { id: 9, name: "Augustinus", logos: 96, pathos: 92, dogma: 75, init: 35, fysik: 50, mgmt: 38, justice: 75, cha: 80, cost: 101, img: "icons/augustinus.png", bio: "Västkyrkans mest inflytelserike fader vars skrifter om nåden och Guds stad formade hela västerlandets tänkande.", sbd: "En absolut best i sena matcher som kombinerar skyhög logik (Logos) med förödande andlig övertalning (Pathos).", hiD: "Mitt hjärta är oroligt under anfallet!", hiB: "Guds suveräna nåd blir min ointagliga sköld!", q: ["Älska, och gör sedan vad du vill.", "Ge mig kyskhet... men inte ännu."] },
-            { id: 10, name: "Joh. Chrysostomos", logos: 78, pathos: 96, dogma: 80, init: 35, fysik: 40, mgmt: 55, justice: 95, cha: 92, cost: 104, img: "icons/johchrysostomos.png", bio: "Konstantinopels ärkebiskop känd som Guldmunnen på grund av sin flammande vältalighet mot elitens korruption.", sbd: "Krossar heresiernas Legitimitet och falska anspråk på helighet genom ett brutalt högt Rättvisepatos.", hiD: "Guldmunnen tappar andan av slaget!", hiB: "Vältalighetens sköld dämpar heresiens vrede!", q: ["Ära vare Gud för allt.", "De fattiga av porten är vårt altare."] },
-            { id: 11, name: "Benedictus", logos: 55, pathos: 50, dogma: 85, init: 35, fysik: 75, mgmt: 95, justice: 35, cha: 65, cost: 83, img: "icons/benedictus.png", bio: "Grundaren av Monte Cassino och fader till det strukturerade västerländska klosterlivets fasta ordning.", sbd: "Besitter en oslagbar Organisations-stat som maximerar truppens återhämtning under Kloster-Meditationen.", hiD: "Klosterregeln skakas i sina grundvalar!", hiB: "Bön och arbete skapar ett säkert skydd!", q: ["Ora et labora - bed och arbeta.", "Låt alla tas emot som vore de Kristus."] },
-            { id: 12, name: "Gregorius den store", logos: 75, pathos: 82, dogma: 78, init: 38, fysik: 45, mgmt: 92, justice: 70, cha: 85, cost: 105, img: "icons/gregorius.png", bio: "Påven som säkrade Rom, reformerade liturgin och organiserade sändebud till Europas mest avlägsna hörn.", sbd: "Håller ordning på lagets logistiska resurser och neutraliserar heresiernas dämpande healing-blockeringar.", hiD: "Min ökända, dåliga mage gör sig påmind!", hiB: "Det påvliga herdeämbetet står pall!", q: ["Själavård är konsternas konst.", "Sjung ut de heliga gregorianska tonerna."] },
-            { id: 13, name: "Joh. av Damaskus", logos: 91, pathos: 50, dogma: 84, init: 40, fysik: 65, mgmt: 35, justice: 55, cha: 60, cost: 71, img: "icons/johdamaskus.png", bio: "Den syriske munken som under kalifatets beskydd räddade den heliga konsten under de bysantinska bildstormarna.", sbd: "Levererar utmärkt intellektuell skada och behåller sitt Dogma-försvar stabilt genom hela disputationen.", hiD: "Färgen flagnar på mina argument!", hiB: "Skyddar sig som för att rädda en helig ikon!", q: ["Ikonen leder blicken till det osynliga.", "Materian är skapad god av Gud."] },
-            { id: 14, name: "Bonifatius", logos: 45, pathos: 79, dogma: 75, init: 85, fysik: 75, mgmt: 60, justice: 50, cha: 72, cost: 82, img: "icons/bonifatius.png", bio: "Munken som högg ner hedniska ekar och konfronterade synkretism med kompromisslös hand.", sbd: "Hög reaktiv snabbhet som tillåter honom att störa ut heresins logistiska fältlinjer innan skadan sprids.", hiD: "Tors ek faller över mij!", hiB: "Hugger resolut ner heretiska villovägar!", q: ["Guds ord är ett svärd.", "Framåt for evangeliets spridning!"] },
-            { id: 15, name: "Ansgar", logos: 50, pathos: 70, dogma: 82, init: 60, fysik: 78, mgmt: 65, justice: 55, cha: 74, cost: 71, img: "icons/ansgar.png", bio: "Nordens apostel som under svåra umbäranden planterade de första kristna fröna i Birka.", sbd: "En stabil allround-karaktär med god uthållighet (HP) som inte viker ner sig under långa strider.", hiD: "Missionsstationen brinner!", hiB: "Vänder tålmodigt den andra kinden till.", q: ["Bland vilda vikingar skyddar Gud.", "Sverige skall en dag höra herdens röst."] },
-            { id: 16, name: "Alopen", logos: 72, pathos: 75, dogma: 65, init: 75, fysik: 60, mgmt: 78, justice: 50, cha: 81, cost: 85, img: "icons/alopen.png", bio: "Den persiske teolog som korsade hela sidenvägen för att presentera skrifterna inför Tang-dynastins kejsare.", sbd: "Utmärkt snabb support och god Karisma som underlättar lagets helande och moral.", hiD: "Sidenvägen skärs av!", hiB: "Behåller ditt djupa östliga lugn.", q: ["Ljusets religion har nått östern.", "Översätt skrifterna till kejsarens språk."] },
-            { id: 17, name: "Hilda av Whitby", logos: 65, pathos: 60, dogma: 75, init: 35, fysik: 60, mgmt: 92, justice: 82, cha: 80, cost: 95, img: "icons/hilda.png", bio: "Den keltiska adelskvinnan som styrde dubbelkloster och agerade domare under det avgörande kyrkomötet i Whitby.", sbd: "Kombinerar skyhög Organisation med solid Rättvisa för att kontrollera heresiens dolda dekreter.", hiD: "Klostrets enhet spricker!", hiB: "Rätar stolt på ryggen med abbedisse-värdighet.", q: ["Fred och enhet framför allt.", "Låt synoden döma rättvist."] },
-            { id: 18, name: "Paschasius Radbertus", logos: 84, pathos: 40, dogma: 70, init: 50, fysik: 55, mgmt: 45, justice: 40, cha: 50, cost: 54, img: "icons/paschasius.png", bio: "En flitig benediktinmunk som lade grunden för västerlandets djupa sakramentsteologi.", sbd: "Ett mycket ekonomiskt och prisvärt val för spelaren som behöver mycket ren logisk skada för en låg TK-kostnad.", hiD: "Mysteriet blir lidande!", hiB: "Analyserar kyligt om hotet är reellt.", q: ["Brödet är Christi verkliga kropp.", "Sakramentet övergår förnuftet."] },
-            { id: 19, name: "Kyrillos & Methodios", logos: 82, pathos: 65, dogma: 70, init: 38, fysik: 50, mgmt: 88, justice: 60, cha: 75, cost: 83, img: "icons/kyrillosmethodius.png", bio: "Bröderna som uppfann det kyrilliska alfabetet för att kunna predika direkt på slavernas eget modersmål.", sbd: "Stänger effektivt ner heresins underjordiska Struktur genom sin starka lingvistiska organisationsförmåga.", hiD: "Vårt nyskapade alfabet raderas!", hiB: "Strukturerar försvaret på folkets språk.", q: ["Gud förstår alla tungomål.", "Översätt boken till slavernas språk."] },
-            { id: 20, name: "Thomas a Kempis", logos: 45, pathos: 82, dogma: 85, init: 38, fysik: 72, mgmt: 50, justice: 40, cha: 60, cost: 68, img: "icons/thomasakempis.png", bio: "Munken vars lilla andliga handbok 'Om Kristi efterföljelse' blev västvärldens mest lästa bok efter bibeln.", sbd: "Ger truppen ett stabilt andligt skydd och hög grundfysik som står emot massangrepp.", hiD: "Världens fåfänglighet tränger in!", hiB: "Söker omedelbart skydd i den tysta bönen.", q: ["Efterfölj Kristi i ödmjukhet.", "Världen förgår, men Guds ord består."] },
-            { id: 21, name: "Bernard av Clairvaux", logos: 78, pathos: 88, dogma: 82, init: 35, fysik: 50, mgmt: 85, justice: 65, cha: 86, cost: 118, img: "icons/bernard.png", bio: "Den karismatiske reformatorn och mystikern vars predikningar fick tusentals att överge allt för klosterlivet.", sbd: "Levererar enorm andlig Pathos-skada som snabbt omvänder och splittrar heresins folkliga massstöd.", hiD: "Mitt passionerade hjärta blöder!", hiB: "Kärlekens eld smälter kätteriet!", q: ["Att älska Gud är måttet för all kärlek.", "Mystiken överträffar torra argument."] },
-            { id: 22, name: "Sankta Clara", logos: 40, pathos: 75, dogma: 93, init: 40, fysik: 82, mgmt: 35, justice: 70, cha: 80, cost: 86, img: "icons/clara.png", bio: "Franciskus trogna vän som grundade Klarissorna och levde i absolut, kompromisslös fattigdom.", sbd: "Besitter en av spelets absolut tjockaste Dogma-sköldar som absorberar massattacker utan problem.", hiD: "Min fattiga cell stormas!", hiB: "Materiell fattigdom dämpar den sekulära smällen!", q: ["I absolut enkelhet finner vi Kristus.", "Bönen är vår mur mot mörkret."] },
-            { id: 23, name: "Hildegard av Bingen", logos: 75, pathos: 85, dogma: 80, init: 35, fysik: 81, mgmt: 78, justice: 72, cha: 83, cost: 103, img: "icons/hildegard.png", bio: "Ett medeltidsgeni som behärskade allt från visionär mystik och komposition till medicin och naturvetenskap.", sbd: "En fantastisk supportkaraktär som balanserar skada, healing och logistiskt försvar i ett.", hiD: "Visionen blir suddig och mörk!", hiB: "Drabbas av en lysande kosmisk uppenbarelse!", q: ["Människan är ett mikrokosmos.", "Den heliga anden ger liv åt skapelsen."] },
-            { id: 24, name: "Franciskus av Assisi", logos: 35, pathos: 95, dogma: 72, init: 79, fysik: 55, mgmt: 30, justice: 74, cha: 78, cost: 79, img: "icons/fransicusavassisi.png", bio: "Mannen som lämnade sin rikedom för att leva bland spetälska och predika radikal kärlek och ödmjukhet.", sbd: "Hänsynslöst effektiv mot heresier som lutar sig mot folklig fanatism. Krossar poolen 'Massorna'.", hiD: "Syster Smärta slår hårt!", hiB: "Ler milt och tackar Gud för Broder Heretiker.", q: ["Predika evangeliet, om nödvändigt med ord.", "Frid och allt gott till skapelsen."] },
-            { id: 25, name: "Dominicus", logos: 85, pathos: 70, dogma: 78, init: 35, fysik: 60, mgmt: 84, justice: 55, cha: 76, cost: 84, img: "icons/dominikus.png", bio: "Akademikern som grundade Predikarorden (Dominikanerna) för att möta villoläror med intellektuell skärpa.", sbd: "Gjuten mot heresier med dolda nätverk. Möter logiska utmaningar med förödande akademisk stringens.", hiD: "Akademin skakas av anfallet!", hiB: "Analyserar genast kätteriets syllogismer.", q: ["Predika i tid och otid.", "Sanningen skall segra genom studier."] },
-            { id: 26, name: "Tomas av Aquino", logos: 99, pathos: 30, dogma: 85, init: 30, fysik: 55, mgmt: 25, justice: 60, cha: 65, cost: 101, img: "icons/thomasaquino.png", bio: "Den 'stumlade oxen' vars monumentala teologiska system vävde samman aristotelisk filosofi med kristen uppenbarelse.", sbd: "Besitter spelets absolut starkaste Logos-anfall. Pulveriserar heresiens 'Kärna' på ett par rundor.", hiD: "Min Summa ifrågasätts!", hiB: "Noterar utspelet som invändning nr 1.", q: ["Nåden fullkomnar naturen, upphäver den inte.", "Tro och vetande verkar harmoniskt ihop."] },
-            { id: 27, name: "Katarina av Siena", logos: 65, pathos: 91, dogma: 82, init: 38, fysik: 38, mgmt: 55, justice: 78, cha: 88, cost: 107, img: "icons/katarina.png", bio: "Den unga mystikern som utan att tveka skällde ut korrupta kardinaler och tvingade påven att återvända till Rom.", sbd: "Enorm andlig Pathos-skada kombinerat med utmärkt helande kraft som stöttar frontlinjen.", hiD: "Min svaga kropp viker sig!", hiB: "Går in i en intensiv extatisk bön!", q: ["Gud är ett hav av frid.", "Tala sanningen, frukta ingen påve."] },
-            { id: 28, name: "John Wycliffe", logos: 83, pathos: 60, dogma: 72, init: 40, fysik: 58, mgmt: 50, justice: 81, cha: 70, cost: 68, img: "icons/wycliffe.png", bio: "Morgonstjärnan och tidig översättare till engelska.", sbd: "Utmärkt anfallare mot heretiker som utnyttjar politisk makt, drivs framåt av ett högt Rättvisepatos.", hiD: "Min engelska penna splittras!", hiB: "Skriver ilsket ner kätteriets felsteg.", q: ["Skriften tillhör folket.", "Kyrkan har ingen världslig makt."] },
-            { id: 29, name: "Heliga Birgitta", logos: 70, pathos: 84, dogma: 81, init: 35, fysik: 70, mgmt: 88, justice: 92, cha: 78, cost: 114, img: "icons/birgitta.png", bio: "Svensk profetissa som läxade upp regenter och grundade en helt ny klosterorden från Vadstena.", sbd: "Krossar heresierna 'Legitimitet' och sköldar på ett ögonblick genom sitt oerhört tunga Rättvisepatos.", hiD: "Uppenbarelsen blir mörk och hotfull!", hiB: "Möts av en sträng, skyddande vision från himlen.", q: ["Visa mij Herre din väg.", "Rom skall renas från sitt förfall."] },
-            { id: 30, name: "Martin Luther", logos: 82, pathos: 94, dogma: 72, init: 35, fysik: 65, mgmt: 35, justice: 78, cha: 85, cost: 118, img: "icons/luther.png", bio: "Augustinermunken vars 95 teser i Wittenberg permanent klöv det västerländska kyrkolandskapet.", sbd: "Levererar våldsamma känslomässiga och folkliga anfall som rensar heresiens folkliga bas på nolltid.", hiD: "Bläckhornet missar heretikern!", hiB: "Här står jag och kan icke annat, Gud hjälpe mig!", q: ["Genom tron allena blir människan rättfärdig.", "Människan är på samma gång syndare och rättfärdig."] },
-            { id: 31, name: "Påve Franciskus", logos: 68, pathos: 84, dogma: 72, init: 38, fysik: 60, mgmt: 75, justice: 85, cha: 80, cost: 91, img: "icons/pavefransiscus.png", bio: "Modern påve med ett starkt fokus på social rättvisa, miljöansvar och kyrkans periferi.", sbd: "Erbjuder ett mjukt men effektivt försvar byggt på hög rättvisekänsla och stödjande healing.", hiD: "Brobyggandet rasar under trycket!", hiB: "Efterlyser ödmjuk dialog mitt under stormen.", q: ["Kyrkan är ett fältlasarett.", "Värna om skapelsen och de fattiga."] },
-            { id: 32, name: "Teresa av Ávila", logos: 65, pathos: 91, dogma: 80, init: 35, fysik: 35, mgmt: 88, justice: 60, cha: 75, cost: 88, img: "icons/theresaavila.png", bio: "Karmelitnunnan som reformerade klostren under spansk inkvisition och beskrev bönens sju inre slott.", sbd: "Spelets näst starkaste helare. Håller hela squaden vid liv även under våldsamma massAOE-attacker.", hiD: "Själsnatten blir outhärdlig!", hiB: "Smärtan förvandlas till en gudomlig eld!", q: ["Låt ingenting skrämma dig, Gud allena räcker.", "Bönen är en vänskaplig samvaro med Gud."] },
-            { id: 33, name: "Ignatius av Loyola", logos: 75, pathos: 70, dogma: 92, init: 35, fysik: 65, mgmt: 86, justice: 38, cha: 78, cost: 100, img: "icons/ignatius.png", bio: "Den före detta soldaten som omvändes och grundade Jesuitorden byggd på strikt andlig disciplin.", sbd: "Hög Organisation och robust försvar. Stabiliserar truppens stats under kaotiska ronder.", hiD: "Andliga övningar avbryts!", hiB: "Intar en stenhård militärisk givakt.", q: ["Allt till Guds större ära.", "Gör dig till en Kristi soldat."] },
-            { id: 34, name: "John Wesley", logos: 74, pathos: 79, dogma: 76, init: 82, fysik: 78, mgmt: 75, justice: 70, cha: 79, cost: 106, img: "icons/wesley.png", bio: "Den anglikanske prästen som red tusentals mil för att predika metodisk omvändelse ute på fälten.", sbd: "Besitter ett extremt högt initiativvärde vilket låter honom agera ständigt först i rundan.", hiD: "Fältpredikan skingras!", hiB: "Upplever att hans hjärta blir gudomligt varmt.", q: ["Världen är min församling.", "Tro utan gärningar är död."] },
-            { id: 35, name: "Teresa av Lisieux", logos: 30, pathos: 75, dogma: 95, init: 40, fysik: 30, mgmt: 20, justice: 50, cha: 82, cost: 61, img: "icons/teresalisieux.png", bio: "Karmelitnunnan känd för sin 'lilla väg' av absolut tillit, kärlek och tålamod i de minsta vardagliga tingen.", sbd: "Ett fantastiskt billigt val för en defensiv tank med extremt högt Dogma-försvar.", hiD: "Min lilla blomma bryts!", hiB: "Tar emot den andliga smällen med ett tålmodigt leende.", q: ["Min väg är den lilla kärlekens väg.", "Jag skall låta ett regn av rosor falla."] },
-            { id: 36, name: "Olaus Petri", logos: 78, pathos: 60, dogma: 75, init: 72, fysik: 62, mgmt: 79, justice: 84, cha: 75, cost: 93, img: "icons/olauspetri.png", bio: "Svensk reformator och lagman som formulerade de kända domarereglerna som betonar folkligt förnuft.", sbd: "Kombinerar hög snabbhet med ett starkt rättvisepatos, ypperlig mot strukturella heresier.", hiD: "Svenska lagboken slits itu!", hiB: "Hänvisar strängt till Domarereglerna.", q: ["Domaren skall komma ihåg att han är till för folket.", "Guds ord skall predikas rent."] },
-            { id: 37, name: "Sören Kierkegaard", logos: 94, pathos: 65, dogma: 60, init: 35, fysik: 45, mgmt: 15, justice: 82, cha: 35, cost: 68, img: "icons/kirkegaard.png", bio: "Den danske existensfilosofen som hånade statskyrkans ljumhet och krävde radikalt personligt val.", sbd: "En intellektuell atombomb som levererar massiv Logos-skada, dock med mycket låg hälsa.", hiD: "Den avgrundsdjupa ångesten slår till!", hiB: "Det subjektiva hoppet bär mitt försvar!", q: ["Livet måste förstås baklänges, men levas framlänges.", "Sanningen är subjektivitet."] },
-            { id: 38, name: "Dietrich Bonhoeffer", logos: 83, pathos: 78, dogma: 82, init: 38, fysik: 60, mgmt: 55, justice: 86, cha: 75, cost: 94, img: "icons/bonhoeffer.png", bio: "Den tyske pastorn som vägrade kompromissa med nazismen, ledde underjordiska seminarier och avrättades i Flossenbürg.", sbd: "Bryter blixtsnabbt ner heretisk Legitimitet genom ett oerhört skarpt Rättvisepatos.", hiD: "Fängelsecellens väggar trycker hårt!", hiB: "Står helt rakryggad och vägrar vika en tum!", q: ["Billig nåd är vår kyrkas dödsfiende.", "Att tiga inför ondskan är ondska i sig självt."] },
-            { id: 39, name: "Moder Teresa", logos: 25, pathos: 85, dogma: 82, init: 35, fysik: 65, mgmt: 78, justice: 92, cha: 74, cost: 108, img: "icons/moderteresa.png", bio: "Syster som vigde sitt liv åt att vårda de döende och absolut fattigaste i Calcuttas djupaste slumområden.", sbd: "Spelets starkaste helare. Helar massiva sår och dämpar heresiens vrede omedelbart.", hiD: "Själens mörka natt tätnar i slummen!", hiB: "Nästakärleken absorberar heresiens vrede omedelbart!", q: ["Gör små saker med stor kärlek.", "Jag see Kristus dölja sig i varje människa."] }
+            // MONASTIKER
+            { id: 7, name: "Amma Synkletika", type: "monastisk", logos: 35, pathos: 85, dogma: 94, init: 40, fysik: 75, mgmt: 45, justice: 55, cost: 84, img: "icons/ammasynkletika.png", bio: "En berömd ökenmoder som övergav sin rikedom för bön och andlig krigföring i Egyptens ödemarker.", sbd: "Ger truppen een massiv andlig barriär och skyddar lagets hälsa genom en orubblig närvaro.", q: ["Vaka över dina tankar.", "Bönen är själens trygga ankare."] },
+            { id: 11, name: "Benedictus", type: "monastisk", logos: 55, pathos: 50, dogma: 85, init: 35, fysik: 75, mgmt: 95, justice: 35, cost: 83, img: "icons/benedictus.png", bio: "Grundaren av Monte Cassino och fader till det strukturerade västerländska klosterlivets fasta ordning.", sbd: "Besitter en oslagbar Organisations-stat som maximerar återhämtning under Kloster-Meditationen.", q: ["Ora et labora - bed och arbeta.", "Låt alla tas emot som vore de Kristus."] },
+            { id: 20, name: "Thomas a Kempis", type: "monastisk", logos: 45, pathos: 82, dogma: 85, init: 38, fysik: 72, mgmt: 50, justice: 40, cost: 68, img: "icons/thomasakempis.png", bio: "Munk vars lilla andliga handbok 'Om Kristi efterföljelse' blev västvärldens mest lästa bok efter bibeln.", sbd: "Ger truppen ett stabilt andligt skydd och hög grundfysik som står emot massangrepp.", q: ["Efterfölj Kristi i ödmjukhet.", "Världen förgår, men Guds ord består."] },
+            { id: 22, name: "Sankta Clara", type: "monastisk", logos: 40, pathos: 75, dogma: 93, init: 40, fysik: 82, mgmt: 35, justice: 70, cost: 86, img: "icons/clara.png", bio: "Franciskus trogna vän som grundade Klarissorna och levde i absolut, kompromisslös fattigdom.", sbd: "Besitter en av spelets absolut tjockaste Dogma-sköldar som absorberar massattacker utan problem.", q: ["I absolut enkelhet finner vi Kristus.", "Bönen är vår mur mot mörkret."] },
+            { id: 23, name: "Hildegard av Bingen", type: "monastisk", logos: 75, pathos: 85, dogma: 80, init: 35, fysik: 81, mgmt: 78, justice: 72, cost: 103, img: "icons/hildegard.png", bio: "Ett medeltidsgeni som behärskade allt från visionär mystik och komposition till medicin och naturvetenskap.", sbd: "En fantastisk supportkaraktär som balanserar skada, healing och logistiskt försvar i ett.", q: ["Människan är ett mikrokosmos.", "Den heliga anden ger liv åt skapelsen."] },
+            { id: 24, name: "Franciskus av Assisi", type: "monastisk", logos: 35, pathos: 95, dogma: 72, init: 79, fysik: 55, mgmt: 30, justice: 74, cost: 79, img: "icons/fransicusavassisi.png", bio: "Mannen som lämnade sin rikedom för att leva bland spetälska och predika radikal kärlek och ödmjukhet.", sbd: "Hänsynslöst effektiv mot heresier som lutar sig mot folklig fanatism. Krossar poolen 'Massorna'.", q: ["Predika evangeliet, om nödvändigt med ord.", "Frid och allt gott till skapelsen."] },
+            { id: 32, name: "Teresa av Ávila", type: "monastisk", logos: 65, pathos: 91, dogma: 80, init: 35, fysik: 35, mgmt: 88, justice: 60, cost: 88, img: "icons/theresaavila.png", bio: "Karmelitnunnan som reformerade klostren under spansk inkvisition och beskrev bönens sju inre slott.", sbd: "Spelets näst starkaste helare. Håller hela squaden vid liv även under våldsamma massAOE-attacker.", q: ["Låt ingenting skrämma dig, Gud räcker.", "Bönen är en vänskaplig samvaro med Gud."] },
+            { id: 35, name: "Teresa av Lisieux", type: "monastisk", logos: 30, pathos: 75, dogma: 95, init: 40, fysik: 30, mgmt: 20, justice: 50, cost: 61, img: "icons/teresalisieux.png", bio: "Karmelitnunnan känd for sin 'lilla väg' av absolut tillit, kärlek och tålamod i de minsta vardagliga tingen.", sbd: "Ett fantastiskt billigt val för en defensiv tank med extremt högt Dogma-försvar.", q: ["Min väg är den lilla kärlekens väg.", "Jag skall låta ett regn av rosor falla."] },
+            { id: 39, name: "Moder Teresa", type: "monastisk", logos: 25, pathos: 85, dogma: 82, init: 35, fysik: 65, mgmt: 78, justice: 92, cost: 108, img: "icons/moderteresa.png", bio: "Syster som vigde sitt liv åt att vårda de döende och absolut fattigaste i Calcuttas slumområden.", sbd: "Spelets starkaste helare. Helar massiva sår och dämpar heresiens vrede omedelbart.", q: ["Gör små saker med stor kärlek.", "Jag see Kristus dölja sig i varje människa."] },
+            { id: 17, name: "Hilda av Whitby", type: "monastisk", logos: 65, pathos: 60, dogma: 75, init: 35, fysik: 60, mgmt: 92, justice: 82, cost: 95, img: "icons/hilda.png", bio: "Den keltiska adelskvinnan som styrde dubbelkloster och agerade domare under det avgörande kyrkomötet i Whitby.", sbd: "Kombinerar skyhög Organisation med solid Rättvisa för att kontrollera heresiens dolda dekreter.", q: ["Fred och enhet framför allt.", "Låt synoden döma rättvist."] },
+            { id: 29, name: "Heliga Birgitta", type: "monastisk", logos: 70, pathos: 84, dogma: 81, init: 35, fysik: 70, mgmt: 88, justice: 92, cost: 114, img: "icons/birgitta.png", bio: "Svensk profetissa som läxade upp regenter och grundade en helt ny klosterorden från Vadstena.", sbd: "Krossar heresierna 'Legitimitet' och sköldar på ett ögonblick genom sitt oerhört tunga Rättvisepatos.", q: ["Visa mij Herre din väg.", "Rom skall renas från sitt förfall."] },
+
+            // SKOLASTIKER
+            { id: 1, name: "Justinus Martyren", type: "skolastisk", logos: 88, pathos: 50, dogma: 65, init: 70, fysik: 45, mgmt: 30, justice: 65, cost: 70, img: "icons/justinus.png", bio: "En av kyrkohistoriens absolut tidigaste filosofer som använde grekiska begrepp för att extraterrestriellt försvara sanningen.", sbd: "Bidrar med spelets absolut högsta grundsnabbhet vilket låter truppen stega fram med blixtsnabba motargument.", q: ["Sanningen tillhör oss kristna.", "Guds Logos har blivit kött."] },
+            { id: 4, name: "Origenes", type: "skolastisk", logos: 95, pathos: 40, dogma: 45, init: 60, fysik: 70, mgmt: 40, justice: 50, cost: 80, img: "icons/origenes.png", bio: "Ett akademiskt geni som lade grunden för den tidiga bibelforskningen och den djupa allegoriska textkritiken.", sbd: "Producerar en helt enorm intellektuell skada (Logos) som kan strimla heresiens centrala lära.", q: ["Skriften har tre djupa nivåer.", "Guds Logos rensar allt förnuft."] },
+            { id: 8, name: "Hieronymus", type: "skolastisk", logos: 90, pathos: 45, dogma: 78, init: 40, fysik: 65, mgmt: 40, justice: 45, cost: 72, img: "icons/hieronymus.png", bio: "Den temperamentsfulle eremiten som ensam översatte hela den hebreiska bibeln till latisk folktext (Vulgata).", sbd: "Genererar stark, ren biblisk skada mot heresins centrala texter och dekreter tack vare sin djupa lingvistik.", q: ["Att inte känna skrifterna är att inte känna Kristus.", "Min heliga vrede kokar!"] },
+            { id: 13, name: "Joh. av Damaskus", type: "skolastisk", logos: 91, pathos: 50, dogma: 84, init: 40, fysik: 65, mgmt: 35, justice: 55, cost: 71, img: "icons/johdamaskus.png", bio: "Den syriske munken som under kalifatets beskydd räddade den heliga konsten under de bysantinska bildstormarna.", sbd: "Levererar utmärkt intellektuell skada och behåller ditt Dogma-försvar stabilt genom hela disputationen.", q: ["Ikonen leder blicken till det osynliga.", "Materian är skapad god av Gud."] },
+            { id: 18, name: "Paschasius Radbertus", type: "skolastisk", logos: 84, pathos: 40, dogma: 70, init: 50, fysik: 55, mgmt: 45, justice: 40, cost: 54, img: "icons/paschasius.png", bio: "En flitig benediktinmunk som lade grunden för västerlandets djupa sakramentsteologi.", sbd: "Ett mycket ekonomiskt och prisvärt val för spelaren som behöver mycket ren logisk skada för en låg TK-kostnad.", q: ["Brödet är Christi verkliga kropp.", "Sakramentet övergår förnuftet."] },
+            { id: 25, name: "Dominicus", type: "skolastisk", logos: 85, pathos: 70, dogma: 78, init: 35, fysik: 60, mgmt: 84, justice: 55, cost: 84, img: "icons/dominikus.png", bio: "Akademikern som grundade Predikarorden (Dominikanerna) för att möta villoläror med intellektuell skärpa.", sbd: "Gjuten mot heresier med dolda nätverk. Möter logiska utmaningar med förödande akademisk stringens.", q: ["Predika i tid och otid.", "Sanningen skall segra genom studier."] },
+            { id: 26, name: "Tomas av Aquino", type: "skolastisk", logos: 99, pathos: 30, dogma: 85, init: 30, fysik: 55, mgmt: 25, justice: 60, cost: 101, img: "icons/thomasaquino.png", bio: "Den 'stumlade oxen' vars monumentala teologiska system vävde samman aristotelisk filosofi med uppenbarelse.", sbd: "Besitter spelets absolut starkaste Logos-anfall. Pulveriserar heresiens 'Kärna' på ett par rundor.", q: ["Nåden fullkomnar naturen, upphäver den inte.", "Tro och vetande verkar harmoniskt ihop."] },
+            { id: 37, name: "Sören Kierkegaard", type: "skolastisk", logos: 94, pathos: 65, dogma: 60, init: 35, fysik: 45, mgmt: 15, justice: 82, cost: 68, img: "icons/kirkegeard.png", bio: "Den danske existensfilosofen som hånade statskyrkans ljumhet och krävde radikalt personligt val.", sbd: "En intellektuell atombomb som levererar massiv Logos-skada, dock med mycket låg hälsa.", q: ["Livet måste förstås baklänges, men levas framlänges.", "Sanningen är subjektivitet."] },
+
+            // KYRKOLEDARE
+            { id: 2, name: "Irenaeus av Lyon", type: "kyrkoledare", logos: 82, pathos: 60, dogma: 90, init: 38, fysik: 55, mgmt: 75, justice: 50, cost: 86, img: "icons/irenaeus.png", bio: "Den store biskopen som systematiskt kartlade och krossade gnostikernas dolda kätterier genom skrifterna.", sbd: "Erbjuder ett monumentalt mentalt försvar (Dogma) och en bastant sköld som säkrar truppen mot dränering.", q: ["Gud blev människa för att vi ska förgudas.", "Kyrkans lära är en och fast."] },
+            { id: 5, name: "Antiokus", type: "kyrkoledare", logos: 20, pathos: 80, dogma: 92, init: 40, fysik: 85, mgmt: 10, justice: 35, cost: 76, img: "icons/antiokus.png", bio: "En stoisk och klippfast herde som vaktade katedralernas murar mot splittring.", sbd: "Fungerar som en ultimat skadesvamp med extremt hög hälsa och Dogma som tar smällen för lagets nukes.", q: ["Behåll traditionen oskadd.", "Kyrkan står fast i stormen."] },
+            { id: 6, name: "Athanasius", type: "kyrkoledare", logos: 85, pathos: 70, dogma: 98, init: 35, fysik: 80, mgmt: 82, justice: 65, cost: 121, img: "icons/athanasius.png", bio: "Mannen som stod ensam mot hela världen (Contra Mundum) under den våldsamma arianska krisen.", sbd: "Enastående ledarskaps-stats och nästintill ogenomträngligt Dogma-skydd som gör honom till ankarpunkten.", q: ["Gud blev vad vi är för att göra oss till vad han är.", "Arius splittrar kyrkans enhet!"] },
+            { id: 9, name: "Augustinus", type: "kyrkoledare", logos: 96, pathos: 92, dogma: 75, init: 35, fysik: 50, mgmt: 38, justice: 75, cost: 101, img: "icons/augustinus.png", bio: "Västkyrkans mest inflytelserike fader vars skrifter om nåden och Guds stad formade hela västerlandet.", sbd: "En absolut best i sena matcher som kombinerar skyhög logik (Logos) med förödande andlig övertalning (Pathos).", q: ["Älska, och gör sedan vad du vill.", "Ge mij kyskhet... men inte ännu."] },
+            { id: 12, name: "Gregorius den store", type: "kyrkoledare", logos: 75, pathos: 82, dogma: 78, init: 38, fysik: 45, mgmt: 92, justice: 70, cost: 105, img: "icons/gregorius.png", bio: "Påven som säkrade Rom, reformerade liturgin och organiserade sändebud till Europas mest avlägsna hörn.", sbd: "Håller ordning på lagets logistiska resurser och neutraliserar heresiernas dämpande healing-blockeringar.", q: ["Själavård är konsternas konst.", "Sjung ut de heliga gregorianska tonerna."] },
+            { id: 19, name: "Kyrillos & Methodios", type: "kyrkoledare", logos: 82, pathos: 65, dogma: 70, init: 38, fysik: 50, mgmt: 88, justice: 60, cost: 83, img: "icons/kyrillosmethodius.png", bio: "Bröderna som uppfann det kyrilliska alfabetet för att kunna predika direkt på slavernas eget modersmål.", sbd: "Stänger effektivt ner heresins underjordiska Struktur genom sin starka lingvistiska organisationsförmåga.", q: ["Gud förstår alla tungomål.", "Översätt boken till slavernas språk."] },
+            { id: 27, name: "Katarina av Siena", type: "kyrkoledare", logos: 65, pathos: 91, dogma: 82, init: 38, fysik: 38, mgmt: 55, justice: 78, cost: 107, img: "icons/katarina.png", bio: "Den unga mystikern som utan att tveka skällde ut korrupta kardinaler och tvingade påven tillbaka till Rom.", sbd: "Enorm andlig Pathos-skada kombinerat med utmärkt helande kraft som stöttar frontlinjen.", q: ["Gud är ett hav av frid.", "Tala sanningen, frukta ingen påve."] },
+            { id: 31, name: "Påve Franciskus", type: "kyrkoledare", logos: 68, pathos: 84, dogma: 72, init: 38, fysik: 60, mgmt: 75, justice: 85, cost: 91, img: "icons/pavefransiscus.png", bio: "Modern påve med ett starkt fokus på social rättvisa, miljöansvar och kyrkans periferi.", sbd: "Erbjuder ett mjukt men effektivt försvar byggt på hög rättvisekänsla och stödjande healing.", q: ["Kyrkan är ett fältlasarett.", "Värna om skapelsen och de fattiga."] },
+            { id: 10, name: "Joh. Chrysostomos", type: "kyrkoledare", logos: 78, pathos: 96, dogma: 80, init: 35, fysik: 40, mgmt: 55, justice: 95, cost: 104, img: "icons/johchrysostomos.png", bio: "Konstantinopels ärkebiskop känd som Guldmunnen på grund av sin flammande vältalighet mot elitens korruption.", sbd: "Krossar heresierna 'Legitimitet' och falska anspråk på helighet genom ett brutalt högt Rättvisepatos.", q: ["Ära vare Gud för allt.", "De fattiga av porten är vårt altare."] },
+
+            // EVANGELISTER
+            { id: 3, name: "Tertullianus", type: "evangelisk", logos: 79, pathos: 75, dogma: 58, init: 88, fysik: 60, mgmt: 20, justice: 78, cost: 85, img: "icons/tertullianus.png", bio: "Skarp nordafrikansk jurist känd för sin kompromisslösa och bitande försvarsretorik.", sbd: "Levererar förödande skada och högt initiativ som snabbt bryter ner heresins moraliska sköldar i stridens tidiga skede.", q: ["De kristnas blod är ett utsäde.", "Jag tror, emedan det är orimligt."] },
+            { id: 14, name: "Bonifatius", type: "evangelisk", logos: 45, pathos: 79, dogma: 75, init: 85, fysik: 75, mgmt: 60, justice: 50, cost: 82, img: "icons/bonifatius.png", bio: "Tysklands apostel som högg ner hedniska ekar och konfronterade synkretism med kompromisslös hand.", sbd: "Hög reaktiv snabbhet som tillåter honom att störa ut heresins logistiska fältlinjer innan skadan sprids.", q: ["Guds ord är ett svärd.", "Framåt for evangeliets spridning!"] },
+            { id: 15, name: "Ansgar", type: "evangelisk", logos: 50, pathos: 70, dogma: 82, init: 60, fysik: 78, mgmt: 65, justice: 55, cost: 71, img: "icons/ansgar.png", bio: "Nordens apostel som under svåra umbäranden planterade de första kristna fröna i Birka.", sbd: "En stabil allround-karaktär med god uthållighet (HP) som inte viker ner sig under långa strider.", q: ["Bland vilda vikingar skyddar Gud.", "Sverige skall en dag höra herdens röst."] },
+            { id: 16, name: "Alopen", type: "evangelisk", logos: 72, pathos: 75, dogma: 65, init: 75, fysik: 60, mgmt: 78, justice: 50, cost: 85, img: "icons/alopen.png", bio: "Den persiske teolog som korsade hela sidenvägen för att presentera skrifterna inför Tang-dynastins kejsare.", sbd: "Utmärkt snabb support och god Karisma som underlättar lagets helande och moral.", q: ["Ljusets religion har nått östern.", "Översätt skrifterna till kejsarens språk."] },
+            { id: 28, name: "John Wycliffe", type: "evangelisk", logos: 83, pathos: 60, dogma: 72, init: 40, fysik: 58, mgmt: 50, justice: 81, cost: 68, img: "icons/wycliffe.png", bio: "Morgonstjärnan och tidig översättare av bibeln till engelska folkmål.", sbd: "Utmärkt anfallare mot heretiker som utnyttjar politisk makt, drivs framåt av ett högt Rättvisepatos.", q: ["Skriften tillhör folket.", "Kyrkan har ingen världslig makt."] },
+            { id: 30, name: "Martin Luther", type: "evangelisk", logos: 82, pathos: 94, dogma: 72, init: 35, fysik: 65, mgmt: 35, justice: 78, cost: 118, img: "icons/luther.png", bio: "Augustinermunken vars 95 teser i Wittenberg permanent klöv det västerländska kyrkolandskapet.", sbd: "Levererar våldsamma känslomässiga och folkliga anfall som rensar heresiens folkliga bas på nolltid.", q: ["Genom tron allena blir människan rättfärdig.", "Här står jag och kan icke annat, Gud hjälpe mij!"] },
+            { id: 34, name: "John Wesley", type: "evangelisk", logos: 74, pathos: 79, dogma: 76, init: 82, fysik: 78, mgmt: 75, justice: 70, cost: 106, img: "icons/wesley.png", bio: "Den anglikanske prästen som red tusentals mil för att predika metodisk omvändelse ute på fälten.", sbd: "Besitter ett extremt högt initiativvärde vilket låter honom agera ständigt först i rundan.", q: ["Världen är min församling.", "Tro utan gärningar är död."] },
+            { id: 36, name: "Olaus Petri", type: "evangelisk", logos: 78, pathos: 60, dogma: 75, init: 72, fysik: 62, mgmt: 79, justice: 84, cost: 93, img: "icons/olauspetri.png", bio: "Svensk reformator och lagman som formulerade de kända domarereglerna som betonar folkligt förnuft.", sbd: "Kombinerar hög snabbhet med ett starkt rättvisepatos, ypperlig mot strukturella heresier.", q: ["Domaren skall komma ihåg att han är till för folket.", "Guds ord skall predikas rent."] },
+            { id: 38, name: "Dietrich Bonhoeffer", type: "evangelisk", logos: 83, pathos: 78, dogma: 82, init: 38, fysik: 60, mgmt: 55, justice: 86, cost: 94, img: "icons/bonhoeffer.png", bio: "Den tyske pastorn som vägrade kompromissa med nazismen och ledde underjordiska seminarier.", sbd: "Bryter blixtsnabbt ner heretisk Legitimitet genom ett oerhört skarpt Rättvisepatos.", q: ["Billig nåd är vår kyrkas dödsfiende.", "Att tiga inför ondskan är ondska i sig självt."] }
         ];
 
-        // --- GLOBAL ENGINE STATE ---
         let playerName = "ANONYM";
         let totalDamageDealt = 0, totalHealingDone = 0; 
         let currentHeresy = null, selectedSquad = [], currentBudget = 500, activeWave = 1, activePreviewChar = null;
         let pHeresyLar = 0, pMaxLar = 0, pHeresyMas = 0, pMaxMas = 0, pHeresyStr = 0, pMaxStr = 0, pHeresyLeg = 0, pMaxLeg = 0;
         let bossAttackPower = 0, squadUnits = [], combatQueue = [], activeQueueIndex = 0, combatRound = 1, inputAwaiting = false;
-        let expandedBattleCharId = null; 
+        let expandedBattleCharId = null, activeTab = "monastisk", activeSynergies = [];
 
-        window.onload = function() { renderHeresies(); renderRoster(); loadLocalLeaderboards(); };
+        window.onload = function() { renderHeresies(); setTab("monastisk"); loadLocalLeaderboards(); };
 
         function changeScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
@@ -273,8 +316,8 @@
         }
 
         function loadLocalLeaderboards() {
-            let duel = JSON.parse(localStorage.getItem("an_duel_v5") || "[]");
-            let waves = JSON.parse(localStorage.getItem("an_waves_v5") || "[]");
+            let duel = JSON.parse(localStorage.getItem("an_duel_v7") || "[]");
+            let waves = JSON.parse(localStorage.getItem("an_waves_v7") || "[]");
             renderTable("board-duel-table", duel);
             renderTable("board-waves-table", waves);
         }
@@ -293,7 +336,7 @@
         }
 
         function saveLocalScore(type, newEntry) {
-            let key = "an_" + type + "_v5";
+            let key = "an_" + type + "_v7";
             let current = JSON.parse(localStorage.getItem(key) || "[]");
             current.push(newEntry); current.sort((a,b) => b.score - a.score); current = current.slice(0, 5); 
             localStorage.setItem(key, JSON.stringify(current));
@@ -314,7 +357,14 @@
             });
         }
 
-        // --- DYNAMISK STRÄNGGENERATOR FÖR HÖGSTA ATTRIBUTET ---
+        function setTab(type) {
+            activeTab = type;
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.toggle('active', b.innerText.toLowerCase().startsWith(type.substring(0,3)));
+            });
+            renderRoster();
+        }
+
         function getHighestStatText(c) {
             let stats = [
                 { name: "Logik", val: c.logos },
@@ -322,48 +372,42 @@
                 { name: "Organisation", val: c.mgmt },
                 { name: "Rättvisa", val: c.justice }
             ];
-            // Sorterar så att den högsta statten hamnar först i listan
             stats.sort((a, b) => b.val - a.val);
             return `Styrka: ${stats[0].name} ${stats[0].val}`;
         }
 
         function renderRoster() {
             const list = document.getElementById('roster-list'); list.innerHTML = '';
-            roster.forEach(c => {
-                let high = (c.logos>=80?1:0)+(c.pathos>=80?1:0)+(c.dogma>=80?1:0)+(c.mgmt>=80?1:0)+(c.justice>=80?1:0)+(c.cha>=80?1:0);
-                const mantle = high >= 2;
-                const card = document.createElement('div'); card.className = `char-card ${mantle ? 'mantle' : ''}`; card.id = `roster-char-${c.id}`;
-                
-                // MODIFIERAD: Skriver nu enbart ut Namn, Dynamiskt Högsta Stat och Kostnad (TK) för maximal scannbarhet
-                card.innerHTML = `
-                    <strong style="color:#ffff55; font-size:13px;">${c.name}</strong><br>
-                    <span style="opacity:0.9;">${getHighestStatText(c)}</span><br>
-                    Kostnad: <strong>${c.cost} TK</strong>
-                `;
-                card.onclick = () => loadPreview(c, mantle);
+            const filtered = roster.filter(c => c.type === activeTab);
+            filtered.forEach(c => {
+                const isSelected = selectedSquad.some(s => s.id === c.id);
+                const card = document.createElement('div');
+                card.className = `char-card ${isSelected ? 'selected' : ''}`;
+                card.innerHTML = `<strong style="color:#ffff55; font-size:12px;">${c.name}</strong><br><span>${getHighestStatText(c)}</span><br>Kostnad: <strong>${c.cost} TK</strong>`;
+                card.onclick = () => loadPreview(c);
                 list.appendChild(card);
             });
         }
 
         function getAvatarUrl(char) {
-            if (char && char.img) {
-                return char.img;
-            }
+            if (char && char.img) return char.img;
             return "icons/justinus.png";
         }
 
-        function loadPreview(char, mantle) {
-            activePreviewChar = { ...char, hasMantle: mantle };
+        function loadPreview(char) {
+            activePreviewChar = char;
             const zone = document.getElementById('char-preview-zone');
             const inSquad = selectedSquad.some(s => s.id === char.id);
             const avatarUrl = getAvatarUrl(char);
+            let high = (char.logos>=80?1:0)+(char.pathos>=80?1:0)+(char.dogma>=80?1:0)+(char.mgmt>=80?1:0)+(char.justice>=80?1:0);
+            const mantle = high >= 2;
 
             zone.innerHTML = `
                 <div class="preview-top-split">
                     <div class="preview-left-text">
                         <h3 class="text-highlight" style="margin-bottom:2px;">${char.name}</h3>
                         <div style="font-size:11px; font-style:italic; margin-bottom:4px; color:#ddd;">"${char.bio}"</div>
-                        <div style="font-size:11px;"><strong style="color:#ffff55;">Förmåga:</strong> ${char.sbd}</div>
+                        <div style="font-size:11px;"><strong style="color:#ffff55;">Bidrag:</strong> ${char.sbd}</div>
                     </div>
                     <div class="img-avatar-frame">
                         <img src="${avatarUrl}" alt="${char.name}" onerror="this.src='icons/justinus.png'">
@@ -377,58 +421,101 @@
                     <strong>⏳ Snabbhet (Initiativ):</strong> <span class="text-cyan">${mantle ? '40 [Låst pga Mantel]' : char.init}</span><br>
                     <strong>❤️ Fysik & Hälsa (HP):</strong> <span class="text-cyan">${char.fysik}</span><br>
                     <strong>⚙️ Organisation (Management):</strong> <span class="text-cyan">${char.mgmt}</span><br>
-                    <strong>⚖️ Rättvisepatos (Justice):</strong> <span class="text-cyan">${char.justice}</span><br>
-                    <strong>📢 Utstrålning (Charisma):</strong> <span class="text-cyan">${char.cha}</span>
+                    <strong>⚖️ Rättvisepatos (Justice):</strong> <span class="text-cyan">${char.justice}</span>
                 </div>
                 <div style="margin-top:auto; font-size:12px; margin-bottom:4px;">Kostnad: <strong class="text-highlight">${char.cost} TK</strong></div>
-                <button onclick="toggleSquadFromPreview()" style="text-align:center; background-color:${inSquad?'#551111':'#006400'}">${inSquad ? '❌ Ta bort från lag' : '➕ Lägg till i squad'}</button>
+                <button onclick="toggleSquadMember(${char.id})" style="text-align:center; width:100%; background-color:${inSquad?'#551111':'#006400'}">${inSquad ? '❌ Ta bort från lag' : '➕ Lägg till i squad'}</button>
             `;
         }
 
-        function toggleSquadFromPreview() {
-            if(!activePreviewChar) return;
-            const c = activePreviewChar; const idx = selectedSquad.findIndex(s => s.id === c.id);
-            if(idx > -1) { selectedSquad.splice(idx, 1); }
-            else {
-                if(selectedSquad.length >= 4) return alert("Max 4 teologer!");
-                if(currentBudget - c.cost < 0) return alert("Inte tillräckligt kapital!");
-                selectedSquad.push({ ...c, currentHP: c.fysik, currentDogma: c.dogma, init: c.hasMantle ? 40 : c.init });
+        function toggleSquadMember(id) {
+            const char = roster.find(c => c.id === id);
+            const idx = selectedSquad.findIndex(s => s.id === id);
+            let high = (char.logos>=80?1:0)+(char.pathos>=80?1:0)+(char.dogma>=80?1:0)+(char.mgmt>=80?1:0)+(char.justice>=80?1:0);
+            const mantle = high >= 2;
+
+            if (idx > -1) {
+                selectedSquad.splice(idx, 1);
+            } else {
+                if (selectedSquad.length >= 4) return alert("Max 4 teologer!");
+                let currentCost = selectedSquad.reduce((sum, s) => sum + s.cost, 0);
+                if (currentCost + char.cost > 500) return alert("Inte tillräckligt Teologiskt Kapital!");
+                selectedSquad.push({ ...char, currentHP: char.fysik, currentDogma: char.dogma, init: mantle ? 40 : char.init, shieldPool: 0 });
             }
-            updateSynodUI(); loadPreview(c, c.hasMantle);
+            updateSynodUI();
+            if(activePreviewChar && activePreviewChar.id === id) loadPreview(char);
         }
 
         function updateSynodUI() {
-            currentBudget = 500 - selectedSquad.reduce((sum, c) => sum + c.cost, 0);
+            renderRoster();
+            currentBudget = 500 - selectedSquad.reduce((sum, s) => sum + s.cost, 0);
             document.getElementById('budget-display').innerText = `Budget: ${currentBudget} / 500 TK`;
-            const slotsContainer = document.getElementById('squad-slots-container'); slotsContainer.innerHTML = '';
+            
+            const squadDiv = document.getElementById('squad-list-display'); squadDiv.innerHTML = '';
             for(let i=0; i<4; i++) {
-                const slot = document.createElement('div');
-                if(selectedSquad[i]) { slot.className = 'squad-slot filled'; slot.innerText = selectedSquad[i].name; }
-                else { slot.className = 'squad-slot'; slot.innerText = '[ TOM PLATS ]'; }
-                slotsContainer.appendChild(slot);
+                const item = document.createElement('div');
+                if (selectedSquad[i]) { item.className = 'squad-item filled'; item.innerText = `${i+1}. ${selectedSquad[i].name}`; }
+                else { item.className = 'squad-item'; item.innerText = `${i+1}. [ TOM PLATS ]`; }
+                squadDiv.appendChild(item);
             }
+            
+            calculateSynergies();
             document.getElementById('start-battle-btn').disabled = (selectedSquad.length === 0);
-            document.querySelectorAll('.char-card').forEach(card => card.classList.remove('selected'));
-            selectedSquad.forEach(c => { const el = document.getElementById(`roster-char-${c.id}`); if(el) el.classList.add('selected'); });
         }
 
-        // --- STRIDSLOGIK & POÄNGMÄTNING ---
+        function calculateSynergies() {
+            const counts = { monastisk: 0, skolastisk: 0, kyrkoledare: 0, evangelisk: 0 };
+            selectedSquad.forEach(s => counts[s.type]++);
+            
+            const synDiv = document.getElementById('synergy-display'); synDiv.innerHTML = '';
+            activeSynergies = [];
+
+            if (counts.monastisk >= 2) {
+                let s = { id: "mon2", name: "Klostervägg", desc: "+20% Healing." };
+                if (counts.monastisk >= 3) s = { id: "mon3", name: "Ora et Labora", desc: "+20% Healing & +5 HP regen per runda." };
+                activeSynergies.push(s);
+            }
+            if (counts.skolastisk >= 2) {
+                activeSynergies.push({ id: "skol", name: "Universitetet", desc: "+15% Logos-skada mot Lärans Kärna." });
+            }
+            if (counts.kyrkoledare >= 2) {
+                activeSynergies.push({ id: "kyrko", name: "Koncilium", desc: "+10 Mentalt försvar (Dogma) till alla teologer." });
+            }
+            if (counts.evangelisk >= 2) {
+                let s = { id: "evan2", name: "Väckelse", desc: "+10% skada mot Massorna & 20% chans att dämpa heresiens attack med 10%." };
+                if (counts.evangelisk >= 3) s = { id: "evan3", name: "Folkrörelse", desc: "+25% skada mot Massorna & dämpning." };
+                activeSynergies.push(s);
+            }
+
+            if (activeSynergies.length === 0) {
+                synDiv.innerHTML = '<p style="opacity:0.5; font-size:11px; margin:auto;">Inga aktiva synergier.</p>';
+            } else {
+                activeSynergies.forEach(s => {
+                    synDiv.innerHTML += `<div class="synergy-item"><strong>${s.name}</strong>: ${s.desc}</div>`;
+                });
+            }
+        }
+
+        // --- STRIDSMOTOR ---
         function initBattle() { 
             activeWave = 1; combatRound = 1; totalDamageDealt = 0; totalHealingDone = 0;
-            squadUnits = JSON.parse(JSON.stringify(selectedSquad)); setupWave(); changeScreen('battle'); 
+            squadUnits = JSON.parse(JSON.stringify(selectedSquad)); 
+            
+            if (activeSynergies.some(s => s.id === "kyrko")) {
+                squadUnits.forEach(u => u.currentDogma += 10);
+            }
+            squadUnits.forEach(u => u.shieldPool = 0); 
+            setupWave(); changeScreen('battle'); 
         }
 
         function setupWave() {
             pMaxLar = currentHeresy.pLar; pHeresyLar = pMaxLar; pMaxMas = currentHeresy.pMas; pHeresyMas = pMaxMas;
             pMaxStr = currentHeresy.pStr; pHeresyStr = pMaxStr; pMaxLeg = currentHeresy.pLeg; pHeresyLeg = pMaxLeg;
-            let name = currentHeresy.waves > 1 && currentHeresy.waveBosses ? currentHeresy.waveBosses[activeWave - 1] : currentHeresy.boss;
+            let name = currentHeresy.boss;
             document.getElementById('boss-name').innerText = name;
-            document.getElementById('boss-heresy').innerText = currentHeresy.name + ` (Våg ${activeWave}/${currentHeresy.waves})`;
-            const log = document.getElementById('battle-log'); log.innerHTML = `<div>Striden börjar mot ${name}!</div>`;
-            const roll = Math.floor(Math.random() * 6) + 1; let mod = 1.0;
-            if(roll<=2) { mod = 0.9; log.innerHTML += "<div><em>Heresin möter internt motstånd! (-10% skada)</em></div>"; }
-            else if(roll>=5) { mod = 1.15; log.innerHTML += "<div class='text-danger'><em>Elden sprider sig! (+15% skada)</em></div>"; }
-            bossAttackPower = Math.floor((currentHeresy.attack || 70) * mod);
+            document.getElementById('boss-heresy').innerText = currentHeresy.name;
+            document.getElementById('battle-log').innerHTML = `<div>Striden börjar mot ${name}!</div>`;
+            bossAttackPower = currentHeresy.attack;
             renderDashboardParty(); startRound();
         }
 
@@ -440,6 +527,7 @@
             if(currentHeresy.id === "pelagianism" && pHeresyLeg > 0) { shield.innerText = "LÄRAN IMMUN"; shield.style.color = "#ff5555"; }
             else if(hasShield) { shield.innerText = "SKÖLD AKTIV (50% RED)"; shield.style.color = "#ffff55"; }
             else { shield.innerText = "BLOTTAD KÄRNA"; shield.style.color = "#55ff55"; }
+            
             document.getElementById('p-laran-txt').innerText = `${pHeresyLar}/${pMaxLar}`;
             document.getElementById('p-laran-bar').style.width = `${(pHeresyLar/pMaxLar)*100}%`;
             document.getElementById('p-massorna-txt').innerText = `${pHeresyMas}/${pMaxMas}`;
@@ -448,11 +536,15 @@
             document.getElementById('p-strukturen-bar').style.width = `${(pHeresyStr/pMaxStr)*100}%`;
             document.getElementById('p-legitimitet-txt').innerText = `${pHeresyLeg}/${pMaxLeg}`;
             document.getElementById('p-legitimitet-bar').style.width = `${(pHeresyLeg/pMaxLeg)*100}%`;
+            
             const div = document.getElementById('alliance-hud'); div.innerHTML = '';
             squadUnits.forEach(c => {
                 const active = combatQueue[activeQueueIndex] && combatQueue[activeQueueIndex].id === c.id && combatQueue[activeQueueIndex].isPlayer;
                 const pct = (c.currentHP/c.fysik)*100; const isExpanded = (expandedBattleCharId === c.id);
-                let rowHTML = `<div class="entity-row ${active?'active-turn':''}" onclick="toggleBattleRowStats(${c.id})"><div style="width:100%;"><div style="display:flex; justify-content:space-between; align-items:center;"><div style="color:${c.currentHP<=0?'#ff5555':'#fff'}"><strong>${active ? '&blacktriangleright; ' : ''}${c.name}</strong></div><div style="font-size:12px;">HP: ${Math.max(0,c.currentHP)}/${c.fysik}<div class="hp-bar-container"><div class="hp-bar" style="width:${Math.max(0,pct)}%; background-color:${pct<30?'#ff5555':'#00ff00'}"></div></div></div></div>`;
+                
+                let shieldText = c.shieldPool > 0 ? ` <span style="color:#55ffff;">[🛡️${c.shieldPool}]</span>` : "";
+                
+                let rowHTML = `<div class="entity-row ${active?'active-turn':''}" onclick="toggleBattleRowStats(${c.id})"><div style="width:100%;"><div style="display:flex; justify-content:space-between; align-items:center;"><div style="color:${c.currentHP<=0?'#ff5555':'#fff'}"><strong>${active ? '&blacktriangleright; ' : ''}${c.name}</strong>${shieldText}</div><div style="font-size:12px;">HP: ${Math.max(0,c.currentHP)}/${c.fysik}<div class="hp-bar-container"><div class="hp-bar" style="width:${Math.max(0,pct)}%; background-color:${pct<30?'#ff5555':'#00ff00'}"></div></div></div></div>`;
                 if(isExpanded && c.currentHP > 0) {
                     rowHTML += `<div class="expanded-stats-box"><div>📜 Logik (Logos): ${c.logos}</div><div>👥 Andlighet (Pathos): ${c.pathos}</div><div>🛡️ Försvar (Dogma): ${c.currentDogma}</div><div>⏳ Snabbhet (Init): ${c.init}</div><div>⚙️ Organisation (Mgmt): ${c.mgmt}</div><div>⚖️ Rättvisa (Justice): ${c.justice}</div></div>`;
                 }
@@ -462,30 +554,32 @@
 
         function startRound() {
             if(pHeresyLar <= 0 || !squadUnits.some(u => u.currentHP > 0)) { resolveOutcome(); return; }
-            if(currentHeresy.id === "double_wave_2" && activeWave === 1 && pHeresyLeg > 0) { squadUnits.forEach(u => u.currentDogma = Math.max(0, u.currentDogma - 8)); logBattle("🧠 Voltaire sänker truppens Dogma med 8."); }
-            if(currentHeresy.id === "gnosticism" && pHeresyLeg > 0) { squadUnits.forEach(u => u.currentDogma = Math.max(0, u.currentDogma - 10)); logBattle("❌ Gnostisk förvirring dränerar Dogma med 10."); }
-            if(currentHeresy.id === "double_wave_1" && activeWave === 2 && pHeresyStr > 0) { squadUnits.forEach(u => u.init = Math.max(10, u.init - 5)); logBattle("⏳ Biskop Johannes sänker Initiativ med 5."); }
+            
+            if (activeSynergies.some(s => s.id === "mon3")) {
+                squadUnits.forEach(u => { if(u.currentHP > 0) u.currentHP = Math.min(u.fysik, u.currentHP + 5); });
+                logBattle("✨ Ora et Labora: Truppen återhämtar +5 HP i bön.");
+            }
+
             logBattle(`<span class="text-highlight">--- RUNDA ${combatRound} ---</span>`);
-            combatQueue = [{ isPlayer: false, name: document.getElementById('boss-name').innerText }];
+            combatQueue = [{ isPlayer: false, name: currentHeresy.boss, init: 999 }];
             squadUnits.forEach(c => { if(c.currentHP > 0) combatQueue.push({ isPlayer: true, ...c }); });
-            const boss = combatQueue.shift(); combatQueue.sort((a,b) => b.init - a.init); combatQueue.unshift(boss);
+            combatQueue.sort((a,b) => b.init - a.init);
             activeQueueIndex = 0; processQueueStep();
         }
 
+        function logBattle(msg) { const log = document.getElementById('battle-log'); log.innerHTML += `<div>${msg}</div>`; log.scrollTop = log.scrollHeight; }
+
         function processQueueStep() {
             if(pHeresyLar <= 0 || !squadUnits.some(u => u.currentHP > 0)) { resolveOutcome(); return; }
-            if(activeQueueIndex >= combatQueue.length) {
-                if(currentHeresy.id === "double_wave_1" && activeWave === 1 && pHeresyStr > 0) { pHeresyLar = Math.min(pMaxLar, pHeresyLar + 30); logBattle("🔧 Strukturen återställer +30 HP till LÄRAN."); }
-                if(currentHeresy.id === "valdensianism" && pHeresyStr > 0) { pHeresyMas = Math.min(pMaxMas, pHeresyMas + 25); logBattle("📦 Strukturen återställer +25 HP till MASSORNA."); }
-                combatRound++; startRound(); return;
-            }
+            if(activeQueueIndex >= combatQueue.length) { combatRound++; startRound(); return; }
+            
+            renderDashboardParty();
             const unit = combatQueue[activeQueueIndex];
             if(unit.isPlayer) {
                 const live = squadUnits.find(u => u.id === unit.id); if(!live || live.currentHP <= 0) { advance(); return; }
-                if(currentHeresy.id === "double_wave_2" && activeWave === 2 && pHeresyMas > 0 && Math.random() < 0.25) { logBattle(`📢 Medial storm! ${live.name} tappar fokus.`); advance(); return; }
-                document.getElementById('active-char-name').innerText = unit.name; renderDashboardParty(); setInput(true);
+                document.getElementById('active-char-name').innerText = unit.name; setInput(true);
             } else {
-                setInput(false); document.getElementById('active-char-name').innerText = "FIENDE"; renderDashboardParty();
+                setInput(false); document.getElementById('active-char-name').innerText = "FIENDE";
                 setTimeout(executeHeresyTurn, 1000);
             }
         }
@@ -495,62 +589,159 @@
 
         function executeHeresyTurn() {
             const live = squadUnits.filter(u => u.currentHP > 0); if(live.length === 0) return;
-            logBattle(`<span class="text-danger">⚠️ MASS-AOE: Heresins villolära slår mot HELA truppen!</span>`);
+            logBattle(`<span class="text-danger">⚠️ MASS-AOE: Heresins villolära slår mot truppen!</span>`);
+            
+            let power = bossAttackPower;
+            if (activeSynergies.some(s => s.id.startsWith("evan")) && Math.random() < 0.20) {
+                power = Math.floor(power * 0.9);
+                logBattle("🛡️ Väckelse: Intern splittring dämpar heresiens slagstyrka!");
+            }
+
             let mult = currentHeresy.id === "arianism" && pHeresyMas > 0 ? 1.5 : 1.0;
             live.forEach(t => {
-                const roll = Math.floor(Math.random()*20)+1; let dmg = Math.floor(((bossAttackPower + roll) - t.currentDogma) * mult);
-                dmg = Math.max(5, dmg); t.currentHP -= dmg; 
-                let comment = dmg >= 22 ? (t.hiD || "pressas hårt!") : (t.currentDogma >= 75 && dmg <= 12 ? (t.hiB || "blockerar kallt!") : (Math.random() < 0.4 && t.q ? `"${t.q[Math.floor(Math.random() * t.q.length)]}"` : "håller stånd."));
-                logBattle(`&nbsp;&nbsp;&bull; <strong>${t.name}</strong> tar ${dmg} skada. <em class="text-cyan">${comment}</em>`);
+                const roll = Math.floor(Math.random()*20)+1; 
+                let rawDmg = Math.floor(((power + roll) - t.currentDogma) * mult);
+                rawDmg = Math.max(5, rawDmg); 
+
+                if (t.shieldPool > 0) {
+                    if (t.shieldPool >= rawDmg) {
+                        t.shieldPool -= rawDmg;
+                        logBattle(`&nbsp;&nbsp;&bull; <strong>${t.name}</strong>s sköld absorberar alla ${rawDmg} skada! (Kvar: 🛡️${t.shieldPool})`);
+                        rawDmg = 0;
+                    } else {
+                        rawDmg -= t.shieldPool;
+                        logBattle(`&nbsp;&nbsp;&bull; <strong>${t.name}</strong>s sköld brister! Absorberar ${t.shieldPool} skada.`);
+                        t.shieldPool = 0;
+                    }
+                }
+
+                if (rawDmg > 0) {
+                    t.currentHP -= rawDmg; 
+                    logBattle("  &bull; <strong>" + t.name + "</strong> tar " + rawDmg + " skada.");
+                }
+
                 if(t.currentHP <= 0) logBattle(`<span style="color:#ff3333;">&nbsp;&nbsp;&nbsp;&nbsp;[!] ${t.name} har tystats!</span>`);
             });
-            renderDashboardParty(); setTimeout(advance, 1000);
+            setTimeout(advance, 1000);
         }
 
+        // --- INTERNT MÅLSÖKNINGSSYSTEM MED LOGGTEXTSFILTER ---
         function executePlayerAction(type) {
             if(!inputAwaiting) return; setInput(false);
-            const unit = combatQueue[activeQueueIndex]; const live = squadUnits.find(u => u.id === unit.id); const roll = Math.floor(Math.random()*20)+1;
-            if(type === 'heal') {
-                let pen = currentHeresy.id === "donatism" && pHeresyStr > 0 ? 0.5 : 1.0; let heal = Math.floor(((live.pathos + roll) * 0.4) * pen);
-                if(currentHeresy.id === "katarerna" && pHeresyMas > 0) heal = Math.floor(heal * 0.5);
-                const targets = squadUnits.filter(u => u.currentHP > 0).sort((a,b) => a.currentHP - b.currentHP);
-                if(targets.length > 0) { 
-                    targets[0].currentHP = Math.min(targets[0].fysik, targets[0].currentHP + heal); 
-                    totalHealingDone += heal;
-                    logBattle("<strong>" + live.name + "</strong> helar " + targets[0].name + " med +" + heal + " HP.");
-                }
-            } else {
-                let dmg = (live.logos + roll) - 30; if(pHeresyMas>0||pHeresyStr>0||pHeresyLeg>0) dmg = Math.floor(dmg*0.5);
-                if(type === 'laran' && currentHeresy.id === "pelagianism" && pHeresyLeg > 0) { logBattle("<span class='text-danger'>🛡️ Pelagius gör LÄRAN immun!</span>"); dmg = 0; }
-                dmg = Math.max(type === 'laran' ? 8 : 10, dmg);
-                if(type === 'laran' && dmg > 0) { pHeresyLar = Math.max(0, pHeresyLar - dmg); logBattle(`<strong>${live.name}</strong> skadar LÄRAN med ${dmg} HP.`); totalDamageDealt += dmg; }
-                else if(type === 'massorna') { pHeresyMas = Math.max(0, pHeresyMas - dmg); logBattle(`<strong>${live.name}</strong> splittrar MASSORNA med ${dmg} HP.`); totalDamageDealt += dmg; }
-                else if(type === 'strukturen') { pHeresyStr = Math.max(0, pHeresyStr - dmg); logBattle(`<strong>${live.name}</strong> skadar STRUKTUREN med ${dmg} HP.`); totalDamageDealt += dmg; }
-                else if(type === 'legitimiteten') { pHeresyLeg = Math.max(0, pHeresyLeg - dmg); logBattle(`<strong>${live.name}</strong> sänker LEGITIMITETEN med ${dmg} HP.`); totalDamageDealt += dmg; }
+            const unit = combatQueue[activeQueueIndex]; const live = squadUnits.find(u => u.id === unit.id);
+            
+            const roll = Math.floor(Math.random() * 20) + 1;
+            let rollBonusText = `(Slog ${roll})`;
+            if (roll === 20) rollBonusText = `<span class="text-highlight"> (Slår 20 - PERFEKT ARGUMENT!)</span>`;
+            if (roll === 1) rollBonusText = `<span class="text-danger"> (Slår 1 - RETORISKT SNEDSTEG)</span>`;
+            
+            if (live.q && live.q.length > 0 && type !== 'heal' && type !== 'shield') {
+                const quote = live.q[Math.floor(Math.random() * live.q.length)];
+                logBattle(`<span class="text-quote">${live.name}: "${quote}"</span>`);
             }
-            renderDashboardParty(); setTimeout(advance, 1000);
+            
+            if(type === 'heal') {
+                let heal = Math.floor((live.pathos + roll) * 0.4);
+                if (roll === 20) heal = Math.floor(heal * 1.5);
+                if (roll === 1) heal = 5;
+                if (activeSynergies.some(s => s.id.startsWith("mon"))) heal = Math.floor(heal * 1.2);
+                
+                // MÅLSÖKNING: Sorterar stenhårt på vem som saknar flest absoluta HP-poäng
+                const targets = squadUnits.filter(u => u.currentHP > 0).sort((a,b) => (a.fysik - a.currentHP) - (b.fysik - b.currentHP));
+                if(targets.length > 0) { 
+                    const target = targets[targets.length - 1]; // Den som har störst skadegap
+                    target.currentHP = Math.min(target.fysik, target.currentHP + heal); 
+                    totalHealingDone += heal;
+                    
+                    // FILTRERING: Skriver ut "sig själv" om målet är handlingens utförare
+                    let identityText = target.id === live.id ? "sig själv med <span style=\"color:#55ff55;\">Helig olja</span>" : `${target.name} med <span style="color:#55ff55;">Helig olja</span>`;
+                    logBattle(`<strong>${live.name}</strong> ${rollBonusText} smörjer ${identityText} (+${heal} HP).`); 
+                }
+            } 
+            else if(type === 'shield') {
+                let shieldValue = Math.floor((live.currentDogma + roll) * 0.35);
+                if (roll === 20) shieldValue = Math.floor(shieldValue * 1.5);
+                if (roll === 1) shieldValue = 4;
+
+                // MÅLSÖKNING: Sorterar i första hand på lägst procentuell hälsa (akut hot). Om alla mår bra, sortera på lägst grund-Dogma (bräckliga karaktärer).
+                const targets = squadUnits.filter(u => u.currentHP > 0).sort((a,b) => {
+                    let pctA = a.currentHP / a.fysik;
+                    let pctB = b.currentHP / b.fysik;
+                    if (pctA !== pctB) return pctA - pctB; 
+                    return a.currentDogma - b.currentDogma; 
+                });
+                
+                if(targets.length > 0) {
+                    const target = targets[0]; 
+                    target.shieldPool += shieldValue;
+                    
+                    // FILTRERING: Skriver ut "sig själv" om målet är handlingens utförare
+                    let identityText = target.id === live.id ? "kastar <span style=\"color:#55ffff;\">Trons sköld</span> på sig själv" : `kastar <span style=\"color:#55ffff;\">Trons sköld</span> på ${target.name}`;
+                    logBattle(`<strong>${live.name}</strong> ${rollBonusText} ${identityText} (🛡️+${shieldValue} skydds-absorb).`);
+                }
+            }
+            else {
+                let activeStatValue = 0;
+                let poolNameText = "";
+                
+                if (type === 'laran') { activeStatValue = live.logos; poolNameText = "Kärnan (LÄRAN)"; }
+                else if (type === 'massorna') { activeStatValue = live.pathos; poolNameText = "MASSORNA"; }
+                else if (type === 'strukturen') { activeStatValue = live.mgmt; poolNameText = "STRUKTUREN"; }
+                else if (type === 'legitimiteten') { activeStatValue = live.justice; poolNameText = "LEGITIMITETEN"; }
+
+                let dmg = (activeStatValue + roll) - 30;
+                const hasShield = (pHeresyMas > 0 || pHeresyStr > 0 || pHeresyLeg > 0);
+                if (hasShield) dmg = Math.floor(dmg * 0.5);
+                
+                if (roll === 20) dmg = Math.floor(dmg * 1.5);
+                if (roll === 1) dmg = 5; 
+                dmg = Math.max(type === 'laran' ? 8 : 10, dmg);
+
+                if(type === 'laran') { 
+                    if (currentHeresy.id === "pelagianism" && pHeresyLeg > 0) { 
+                        logBattle("<span class='text-danger'>🛡️ Pelagius: LÄRAN är helt immun till Legitimiteten knäckts!</span>"); 
+                        dmg = 0; 
+                    } else {
+                        if (activeSynergies.some(s => s.id === "skol")) dmg = Math.floor(dmg * 1.15);
+                        pHeresyLar = Math.max(0, pHeresyLar - dmg); 
+                        logBattle(`<strong>${live.name}</strong> ${rollBonusText} angriper ${poolNameText} för ${dmg} HP.`); 
+                        totalDamageDealt += dmg; 
+                    }
+                }
+                else if(type === 'massorna') { 
+                    let mMult = 1.0;
+                    if (activeSynergies.some(s => s.id === "evan2")) mMult = 1.10;
+                    if (activeSynergies.some(s => s.id === "evan3")) mMult = 1.25;
+                    dmg = Math.floor(dmg * mMult);
+                    pHeresyMas = Math.max(0, pHeresyMas - dmg); 
+                    logBattle(`<strong>${live.name}</strong> ${rollBonusText} splittrar ${poolNameText} med ${dmg} HP.`); 
+                    totalDamageDealt += dmg; 
+                }
+                else if(type === 'strukturen') { 
+                    pHeresyStr = Math.max(0, pHeresyStr - dmg); 
+                    logBattle(`<strong>${live.name}</strong> ${rollBonusText} saboterar ${poolNameText} med ${dmg} HP.`); 
+                    totalDamageDealt += dmg; 
+                }
+                else if(type === 'legitimiteten') { 
+                    pHeresyLeg = Math.max(0, pHeresyLeg - dmg); 
+                    logBattle(`<strong>${live.name}</strong> ${rollBonusText} underminerar ${poolNameText} med ${dmg} HP.`); 
+                    totalDamageDealt += dmg; 
+                }
+            }
+            setTimeout(advance, 1000);
         }
 
         function resolveOutcome() {
-            const victory = pHeresyLar <= 0; const squadAlive = squadUnits.some(u => u.currentHP > 0);
-            if (!squadAlive || (victory && activeWave === currentHeresy.waves)) {
-                changeScreen('result'); const h = document.getElementById('result-header'); const t = document.getElementById('result-text');
-                let speedBonus = victory ? Math.max(0, 1000 - (combatRound * 45)) : 0;
-                let finalScore = totalDamageDealt + totalHealingDone + speedBonus;
-                document.getElementById('final-score-display').innerText = `POÄNG: ${finalScore} (Aktivitet: ${totalDamageDealt+totalHealingDone} + Tidsspeed-bonus: ${speedBonus})`;
-                if(victory) {
-                    h.innerText = "VIKTORIA!"; h.style.color = "#55ff55";
-                    t.innerHTML = `Mästerligt, <span class="text-highlight">${playerName}</span>! Ortodoxin står orubbad tack vare dig!`;
-                    saveLocalScore(currentHeresy.waves === 1 ? "duel" : "waves", { name: playerName, score: finalScore });
-                } else { h.innerText = "ANATEMA!"; h.style.color = "#ff5555"; t.innerText = "Truppen har tystats av massorna."; }
-            } else if (victory && activeWave < currentHeresy.waves) {
-                changeScreen('meditation'); const med = document.getElementById('meditation-log');
-                let base = currentHeresy.id === "donatism" && pHeresyStr > 0 ? 10 : 20;
-                let maxM = Math.max(...squadUnits.filter(u=>u.currentHP>0).map(u=>u.mgmt)); let bonus = Math.floor(maxM * 0.4); let total = base + bonus;
-                med.innerHTML = `<div>Meditation ger +${total} HP!</div>`; squadUnits.forEach(u => { if(u.currentHP>0) u.currentHP = Math.min(u.fysik, u.currentHP + total); });
-            }
+            changeScreen('result'); const h = document.getElementById('result-header'); const t = document.getElementById('result-text');
+            let speedBonus = pHeresyLar <= 0 ? Math.max(0, 1000 - (combatRound * 45)) : 0;
+            let finalScore = totalDamageDealt + totalHealingDone + speedBonus;
+            document.getElementById('final-score-display').innerText = `POÄNG: ${finalScore}`;
+            if(pHeresyLar <= 0) {
+                h.innerText = "VIKTORIA!"; h.style.color = "#55ff55";
+                t.innerHTML = `Mästerligt, <span class="text-highlight">${playerName}</span>! Ortodoxin står orubbad tack vare dig!`;
+                saveLocalScore("duel", { name: playerName, score: finalScore });
+            } else { h.innerText = "ANATEMA!"; h.style.color = "#ff5555"; t.innerText = "Truppen har tystats av heresins villoläror."; }
         }
-        function startNextWave() { activeWave++; changeScreen('battle'); setupWave(); }
     </script>
 </body>
 </html>
