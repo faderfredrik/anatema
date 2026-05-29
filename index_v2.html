@@ -5,189 +5,244 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ANATEMA - Theological Disputation V2</title>
     <style>
-        /* --- GRUNDSTIL & RETRO-KÄNSLA --- */
+        /* --- GLOBAL RETRO JRPG STYLING --- */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
-        body { background-color: #05050a; color: #ffffff; overflow: hidden; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        body { background-color: #06060c; color: #ffffff; overflow: hidden; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
 
-        /* --- DET DYNAMISKA STRIDSFÄLTET --- */
-        .battle-screen {
+        /* --- JRPG WINDOW INNER FRAME --- */
+        .jrpg-viewport {
             position: relative;
             width: 100vw;
             height: 100vh;
-            max-width: 1200px;
+            max-width: 1100px;
             max-height: 700px;
+            background: #0d0d1f;
+            background: linear-gradient(180deg, #090914 0%, #111126 100%);
             border: 4px solid #3a3a4a;
-            background-color: #101018;
-            /* Förberett för dina framtida bakgrundsbilder: */
-            background-size: cover;
-            background-position: center;
-            display: grid;
-            grid-template-rows: 60px 30px 1fr 180px;
-            overflow: hidden;
-            box-shadow: 0 0 30px rgba(0,0,0,0.8);
-        }
-
-        /* --- LAGER 1: INITIATIV-TIDSLINJE --- */
-        .timeline-zone { display: flex; justify-content: flex-end; padding: 10px; background: rgba(0,0,0,0.4); }
-        .timeline-box { display: flex; gap: 6px; background: rgba(20,20,30,0.8); border: 2px solid #555; padding: 4px; border-radius: 4px; }
-        .timeline-node { width: 32px; height: 32px; background: #222; border: 1px solid #aaa; display: flex; justify-content: center; align-items: center; font-size: 10px; font-weight: bold; }
-        .timeline-node.active { border-color: #ffff55; background: #444011; color: #ffff55; }
-        .timeline-node.lair { border-color: #ff5555; background: #441111; color: #ff5555; }
-
-        /* --- LAGER 2: TRANSPARENT STATUSBAR (INFLYTANDE) --- */
-        .influence-zone { padding: 0 20px; }
-        .influence-bar-container {
-            width: 100%;
-            height: 16px;
-            border: 2px solid rgba(255,255,255,0.4);
-            background-color: rgba(0,0,255,0.4); /* Blå = Ortodoxi */
-            display: flex;
-            overflow: hidden;
-            border-radius: 3px;
-        }
-        .influence-red-bar {
-            background-color: rgba(255,0,0,0.6); /* Röd = Kätteri */
-            height: 100%;
-            transition: width 0.4s ease;
-        }
-
-        /* --- LAGER 3: ARENAN (AVATARER & LOGG) --- */
-        .arena-zone {
-            display: grid;
-            grid-template-columns: 1fr 380px; /* Delar upp skärmen i spelyta och logg */
-            padding: 20px;
-            gap: 20px;
-            min-height: 0;
-        }
-        
-        /* Tom yta preppad för boss- och teolog-avatarer */
-        .avatar-battlefield { position: relative; width: 100%; height: 100%; }
-        .boss-placeholder { position: absolute; left: 10%; top: 20%; width: 150px; height: 150px; border: 2px dashed rgba(255,85,85,0.3); display: flex; justify-content: center; align-items: center; color: rgba(255,85,85,0.4); }
-        .squad-placeholders { position: absolute; right: 10%; top: 15%; display: flex; flex-direction: column; gap: 15px; }
-        .char-sprite-slot { width: 60px; height: 60px; border: 2px dashed rgba(85,255,85,0.3); display: flex; justify-content: center; align-items: center; color: rgba(85,255,85,0.4); }
-
-        /* Semitransparent debattlogg i bakgrunden */
-        .battle-log-box {
-            background: rgba(15, 5, 5, 0.65);
-            border: 2px solid #551111;
-            border-radius: 4px;
-            padding: 12px;
+            box-shadow: inset 0 0 20px #000, 0 10px 30px rgba(0,0,0,0.8);
+            border-radius: 6px;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
-            overflow-y: auto;
-            font-size: 11px;
-            line-height: 1.5;
-            color: #ffaaaa;
-        }
-        .battle-log-box strong { color: #ffffff; }
-        .text-quote { color: #55ffff; font-style: italic; }
-
-        /* --- LAGER 4: CHAINED ECHOES MENYVAL & STATUS --- */
-        .hud-zone {
-            display: grid;
-            grid-template-columns: 1fr 400px; /* Vänster: Meny, Höger: Teolog-status */
-            background: #0d0d1a;
-            border-top: 4px solid #3a3a4a;
-            padding: 10px;
-            gap: 15px;
+            overflow: hidden;
         }
 
-        /* Navigeringen (Vänster) */
-        .menu-container { display: flex; gap: 15px; border: 2px solid #ffff55; background: #000020; padding: 10px; border-radius: 4px; width: 100%; }
-        .main-commands { width: 130px; display: flex; flex-direction: column; gap: 4px; border-right: 1px solid #444; padding-right: 10px; }
-        .sub-skills-list { flex-grow: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; content-align: start; overflow-y: auto; }
-        
-        .menu-btn { background: transparent; color: #aaa; border: none; text-align: left; font-size: 12px; cursor: pointer; text-transform: uppercase; padding: 4px; font-weight: bold; }
-        .menu-btn:hover, .menu-btn.active { color: #ffff55; background: rgba(255,255,85,0.1); }
-        .skill-btn { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid #555; padding: 6px; font-size: 11px; border-radius: 2px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; }
-        .skill-btn:hover { border-color: #ffff55; background: rgba(255,255,85,0.1); }
-        .skill-cost { color: #55ffff; font-weight: bold; }
+        .screen { display: flex; flex-direction: column; flex-grow: 1; padding: 25px; width: 100%; height: 100%; min-height: 0; }
+        .hidden { display: none !important; }
 
-        /* Teologernas statusrader (Höger) */
-        .party-status-box { display: flex; flex-direction: column; gap: 4px; justify-content: center; }
-        .party-row { display: grid; grid-template-columns: 45px 110px 1fr 75px; align-items: center; background: rgba(0,0,0,0.3); border: 1px solid #444; padding: 2px 6px; border-radius: 2px; font-size: 11px; }
-        .party-shield-slot { font-weight: bold; color: #55ffff; font-size: 11px; }
-        .party-name { font-weight: bold; color: #ffff55; }
+        h1, h2, h3, h4 { color: #ffff55; text-transform: uppercase; text-shadow: 2px 2px #000000; letter-spacing: 2px; margin-bottom: 15px; }
+        p { line-height: 1.6; font-size: 13px; color: #ddd; }
+
+        /* --- STANDARDRETRO KNAPPAR --- */
+        button.ret-btn {
+            background-color: #0b0b26;
+            color: #ffffff;
+            border: 2px solid #55556a;
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            border-radius: 4px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 #000;
+        }
+        button.ret-btn:hover:not(:disabled) { background-color: #ffff55; color: #000000; border-color: #000; transform: translateY(-1px); box-shadow: 0 5px 0 #000; }
+        button.ret-btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 #000; }
+        button.ret-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        /* --- SKÄRM 1: STARTSKÄRM --- */
+        #screen-start { justify-content: center; align-items: center; text-align: center; gap: 20px; }
+        .start-box { max-width: 700px; background: rgba(0,0,0,0.5); border: 2px dashed #3a3a4a; padding: 30px; border-radius: 6px; }
+        .start-input { background: #000; color: #ffff55; border: 2px solid #555; padding: 12px; font-size: 16px; font-family: inherit; font-weight: bold; text-align: center; text-transform: uppercase; margin: 15px 0; width: 250px; }
+
+        /* --- SKÄRM 2: HERESIVÄLJARE --- */
+        .heresy-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; overflow-y: auto; padding-right: 5px; flex-grow: 1; }
+        .heresy-card { background: rgba(0,0,0,0.4); border: 2px solid #3a3a4a; padding: 15px; border-radius: 4px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; justify-content: space-between; }
+        .heresy-card:hover { border-color: #ffff55; background: rgba(255,255,85,0.05); transform: scale(1.01); }
+        .heresy-card h3 { font-size: 16px; margin-bottom: 5px; }
+
+        /* --- SKÄRM 3: SYNODEN (TRUPPBYGGE) --- */
+        .synod-layout { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; flex-grow: 1; min-height: 0; }
+        .tab-menu { display: flex; gap: 5px; margin-bottom: 10px; border-bottom: 2px solid #3a3a4a; }
+        .tab-btn { background: rgba(0,0,0,0.4); border: 2px solid #3a3a4a; border-bottom: none; padding: 8px 14px; color: #888; cursor: pointer; font-size: 11px; text-transform: uppercase; font-weight: bold; }
+        .tab-btn.active { background: #ffff55; color: #000; border-color: #ffff55; }
+        .roster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; overflow-y: auto; height: 260px; padding-right: 5px; }
+        .char-card { background: rgba(0,0,0,0.3); border: 2px solid #3a3a4a; padding: 8px; border-radius: 4px; cursor: pointer; font-size: 11px; }
+        .char-card:hover { border-color: #ffff55; }
+        .char-card.selected { border-color: #00ff00; background: rgba(0,255,0,0.05); }
         
-        /* HP & DE Bars */
-        .bar-container { background: #300; border: 1px solid #777; height: 10px; border-radius: 2px; position: relative; margin-right: 8px; }
-        .bar-fill { height: 100%; background: #0f0; width: 100%; transition: width 0.3s; }
-        .bar-fill.de { background: #0df; }
-        .bar-text { font-size: 9px; position: absolute; right: 2px; top: -1px; font-weight: bold; color: #fff; }
+        .squad-preview-zone { display: flex; flex-direction: column; background: rgba(0,0,0,0.5); border: 2px solid #3a3a4a; padding: 15px; border-radius: 4px; height: 100%; overflow-y: auto; }
+        .squad-vertical-list { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
+        .squad-slot-item { background: rgba(0,0,0,0.4); border: 1px dashed #555; padding: 10px; font-size: 12px; border-radius: 4px; display: flex; align-items: center; gap: 10px; }
+        .squad-slot-item.filled { border-style: solid; border-color: #00ff00; color: #00ff00; font-weight: bold; }
+        .synergy-box { background: rgba(255,255,85,0.03); border: 1px solid #ffff55; padding: 10px; border-radius: 4px; font-size: 11px; min-height: 80px; margin-top: 10px; }
+
+        /* --- SKÄRM 4: STRIDSSKÄRM (CHAINED ECHOES STYLE) --- */
+        #screen-battle { padding: 0; display: grid; grid-template-rows: 50px 25px 1fr 170px; }
+        .timeline-zone { display: flex; justify-content: flex-end; align-items: center; padding-right: 20px; background: rgba(0,0,0,0.5); border-bottom: 1px solid #2a2a3a; }
+        .timeline-box { display: flex; gap: 5px; background: #0a0a14; border: 2px solid #444; padding: 3px; border-radius: 4px; }
+        .timeline-node { width: 34px; height: 34px; background: #151522; border: 1px solid #666; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 9px; font-weight: bold; border-radius: 2px; }
+        .timeline-node img { width: 18px; height: 18px; object-fit: contain; }
+        .timeline-node.active { border-color: #ffff55; background: #3d3d1a; color: #ffff55; box-shadow: 0 0 8px #ffff55; }
+        .timeline-node.lair { border-color: #ff5555; background: #3d1a1a; color: #ff5555; }
+
+        .influence-zone { padding: 4px 20px; background: rgba(0,0,0,0.3); }
+        .influence-container { width: 100%; height: 14px; border: 2px solid #444; background: #000066; display: flex; border-radius: 3px; overflow: hidden; position: relative; }
+        .influence-red-bar { background: #990000; height: 100%; transition: width 0.4s ease; width: 40%; }
+        .influence-text-label { position: absolute; width: 100%; text-align: center; font-size: 9px; font-weight: bold; top: 0; left: 0; line-height: 10px; text-shadow: 1px 1px #000; color: #aaa; }
+
+        .battle-arena { display: grid; grid-template-columns: 1fr 360px; gap: 15px; padding: 15px; min-height: 0; }
+        .arena-graphics { position: relative; background: rgba(0,0,0,0.2); border-radius: 4px; border: 1px solid rgba(255,255,255,0.05); }
+        
+        /* Heresins 3 live-mätare på fältet */
+        .boss-hp-cluster { position: absolute; left: 20px; top: 20px; background: rgba(0,0,0,0.6); border: 1px solid #ff5555; padding: 8px; border-radius: 4px; width: 220px; display: flex; flex-direction: column; gap: 5px; }
+        .pillar-mini-row { font-size: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .mini-bar-bg { width: 100px; height: 8px; background: #300; border: 1px solid #555; border-radius: 1px; overflow: hidden; }
+        .mini-bar-fill { height: 100%; background: #ff5555; width: 100%; transition: width 0.3s; }
+        .mini-bar-fill.str { background: #55ffff; }
+        .mini-bar-fill.leg { background: #ffff55; }
+
+        /* Snygg transparent pergamentlogg */
+        .battle-log-scroll { background: rgba(18, 12, 12, 0.75); border: 2px solid #4a1a1a; border-radius: 4px; padding: 12px; display: flex; flex-direction: column; justify-content: flex-end; overflow-y: auto; font-size: 11px; color: #f2d6d6; box-shadow: inset 0 0 10px #000; }
+
+        /* HUD PANEL */
+        .battle-hud-panel { display: grid; grid-template-columns: 1fr 380px; background: #090912; border-top: 3px solid #2a2a3a; padding: 10px; gap: 15px; }
+        .chained-menu { display: flex; gap: 12px; background: #02020a; border: 2px solid #445; padding: 8px; border-radius: 4px; }
+        .menu-left-nav { width: 110px; display: flex; flex-direction: column; gap: 4px; border-right: 1px solid #334; padding-right: 8px; }
+        .menu-right-actions { flex-grow: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; align-content: start; }
+        
+        .c-btn { background: transparent; color: #778; border: none; text-align: left; font-size: 11px; padding: 5px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+        .c-btn:hover, .c-btn.active { color: #ffff55; background: rgba(255,255,85,0.1); }
+        .action-node-btn { background: rgba(255,255,255,0.03); border: 1px solid #444; padding: 6px; color: #fff; font-size: 11px; border-radius: 2px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; }
+        .action-node-btn:hover { border-color: #ffff55; background: rgba(255,255,85,0.08); }
+
+        /* Squad HUD Rader med Ikon-stöd */
+        .squad-status-container { display: flex; flex-direction: column; gap: 4px; justify-content: center; }
+        .hud-party-row { display: grid; grid-template-columns: 24px 34px 90px 1fr 65px; align-items: center; background: rgba(0,0,0,0.4); border: 1px solid #2a2a3a; padding: 2px 6px; border-radius: 3px; font-size: 11px; }
+        .hud-avatar-frame { width: 20px; height: 20px; object-fit: contain; }
+        .hud-shield-badge { color: #55ffff; font-weight: bold; font-size: 10px; }
+        .hud-char-name { font-weight: bold; color: #aaa; }
+        .hud-char-name.active-turn { color: #ffff55; text-shadow: 0 0 5px #ffff55; }
+        
+        .hud-bar { height: 9px; background: #200; border: 1px solid #555; border-radius: 2px; position: relative; margin-right: 5px; overflow: hidden; }
+        .hud-bar-fill { height: 100%; background: #22cc22; width: 100%; transition: width 0.3s; }
+        .hud-bar-fill.de { background: #00ccff; }
+        .hud-bar-label { position: absolute; width: 100%; text-align: right; padding-right: 4px; font-size: 8px; font-weight: bold; top: -1px; color: #fff; text-shadow: 1px 1px #000; }
+
+        /* --- SKÄRM 5: RESULTAT --- */
+        #screen-result { justify-content: center; align-items: center; gap: 15px; text-align: center; }
     </style>
 </head>
 <body>
 
-    <div class="battle-screen" id="battlefield-container">
-        
-        <div class="timeline-zone">
-            <div class="timeline-box" id="timeline-display">
-                <div class="timeline-node active">Act</div>
-                <div class="timeline-node">Teo</div>
-                <div class="timeline-node lair">Lair</div>
-                <div class="timeline-node">Teo</div>
-                <div class="timeline-node">Next</div>
+    <div class="jrpg-viewport">
+
+        <div id="screen-start" class="screen">
+            <h1>Projekt Anatema II</h1>
+            <div class="start-box">
+                <p>Välkommen apologet! Kyrkomötet är sammankallat för att möta tidsandans villoläror med dolda d20-system, taktiska tjänstegåvor och orubbligt Dogma.</p>
+                <input type="text" id="player-name-input" class="start-input" placeholder="DITT NAMN" maxLength="12">
+                <br>
+                <button class="ret-btn" onclick="registreraSpelare()">Träd in i Synoden &rarr;</button>
             </div>
         </div>
 
-        <div class="influence-zone">
-            <div class="influence-bar-container">
-                <div class="influence-red-bar" id="influence-bar-fill" style="width: 40%;"></div>
-            </div>
+        <div id="screen-disputation" class="screen hidden">
+            <h2>Välj Teologisk Utmaning</h2>
+            <p style="margin-bottom: 15px;">Konfrontera heresiens följarskara och bringa ordning i tidsandan:</p>
+            <div class="heresy-grid" id="heresy-selection-list">
+                </div>
         </div>
 
-        <div class="arena-zone">
-            <div class="influence-zone">
-                <div class="avatar-battlefield">
-                    <div class="boss-placeholder" id="boss-graphic">Boss Avatar</div>
-                    <div class="squad-placeholders">
-                        <div class="char-sprite-slot">Teo 1</div>
-                        <div class="char-sprite-slot">Teo 2</div>
-                        <div class="char-sprite-slot">Teo 3</div>
-                        <div class="char-sprite-slot">Teo 4</div>
+        <div id="screen-synod" class="screen hidden">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h2>Synoden (Truppbygge)</h2>
+                <h4 id="TK-budget-label" style="color:#ffff55;">TK-Budget: 500 / 500</h4>
+            </div>
+            
+            <div class="synod-layout">
+                <div>
+                    <div class="tab-menu">
+                        <button class="tab-btn active" onclick="filtreraMentalitet('Monastiker', this)">Monastiker</button>
+                        <button class="tab-btn" onclick="filtreraMentalitet('Filosof', this)">Filosof</button>
+                        <button class="tab-btn" onclick="filtreraMentalitet('Magistrat', this)">Magistrat</button>
+                        <button class="tab-btn" onclick="filtreraMentalitet('Retoriker', this)">Retoriker</button>
                     </div>
+                    <div class="roster-grid" id="synod-roster-display">
+                        </div>
+                </div>
+
+                <div class="squad-preview-zone">
+                    <h4>Aktuell Squad (Max 4)</h4>
+                    <div class="squad-vertical-list" id="squad-slots-display">
+                        </div>
+                    <h4>Aktiva Synergier</h4>
+                    <div class="synergy-box" id="synod-synergy-display">Inga synergier aktiverade.</div>
+                    
+                    <button class="ret-btn" id="start-battle-confirm-btn" disabled style="margin-top:auto; width:100%;" onclick="initieraD20Strid()">Starta disputation &rarr;</button>
                 </div>
             </div>
-            
-            <div class="battle-log-box" id="disputation-log">
-                <div>📜 <strong>Systemet startar...</strong></div>
-                <div>Välkommen apologet! Välj dina handlingar i menyn nedan.</div>
-            </div>
         </div>
 
-        <div class="hud-zone">
+        <div id="screen-battle" class="screen hidden">
             
-            <div class="menu-container">
-                <div class="main-commands">
-                    <div style="font-size:10px; color:#888; margin-bottom:4px; text-transform:uppercase;" id="active-char-title">Aktiv: Luther</div>
-                    <button class="menu-btn active">Attack</button>
-                    <button class="menu-btn">Skills</button>
-                    <button class="menu-btn">Items</button>
-                    <button class="menu-btn">Defend</button>
+            <div class="timeline-zone">
+                <div class="timeline-box" id="hud-timeline">
+                    </div>
+            </div>
+
+            <div class="influence-zone">
+                <div class="influence-container">
+                    <div class="influence-red-bar" id="hud-influence-fill"></div>
+                    <div class="influence-text-label">FLÖDE ÖVER MASSORNA (BLÅ = ORTODOXI | RÖD = KÄTTERI)</div>
+                </div>
+            </div>
+
+            <div class="battle-arena">
+                <div class="arena-graphics" id="battle-bg-layer">
+                    <div class="boss-hp-cluster">
+                        <h4 id="hud-boss-name" style="margin-bottom:2px; font-size:12px;">Boss</h4>
+                        <div class="pillar-mini-row">
+                            <span>📜 LÄRAN (Kärna):</span>
+                            <div class="mini-bar-bg"><div class="mini-bar-fill" id="bar-laran"></div></div>
+                        </div>
+                        <div class="pillar-mini-row">
+                            <span>⚙️ STRUKTUR:</span>
+                            <div class="mini-bar-bg"><div class="mini-bar-fill str" id="bar-struktur"></div></div>
+                        </div>
+                        <div class="pillar-mini-row">
+                            <span>⚖️ LEGITIMITET:</span>
+                            <div class="mini-bar-bg"><div class="mini-bar-fill leg" id="bar-legitimitet"></div></div>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="sub-skills-list" id="sub-commands-display">
-                    <button class="skill-btn"><span>📜 Logos-argument</span></button>
-                    <button class="skill-btn"><span>👥 Pathos-vädjan</span></button>
-                </div>
+                <div class="battle-log-scroll" id="hud-battle-log">
+                    </div>
             </div>
 
-            <div class="party-status-box" id="party-hud-display">
-                <div class="party-row">
-                    <div class="party-shield-slot">🛡️ 12</div>
-                    <div class="party-name">Luther</div>
-                    <div class="bar-container">
-                        <div class="bar-fill" style="width: 100%;"></div>
-                        <span class="bar-text">HP 65/65</span>
+            <div class="battle-hud-panel">
+                <div class="chained-menu">
+                    <div class="menu-left-nav">
+                        <div style="font-size:9px; color:#ffff55; margin-bottom:4px;" id="hud-active-name">TUR: -</div>
+                        <button class="c-btn active" id="btn-nav-attack" onclick="bytSubMeny('attack')">Attack</button>
+                        <button class="c-btn" id="btn-nav-skills" onclick="bytSubMeny('skills')">Skills</button>
+                        <button class="c-btn" id="btn-nav-items" onclick="bytSubMeny('items')">Items</button>
                     </div>
-                    <div class="bar-container">
-                        <div class="bar-fill de" style="width: 100%;"></div>
-                        <span class="bar-text">DE 2/2</span>
-                    </div>
-                </div>
+                    <div class="menu-right-actions" id="hud-sub-actions">
+                        </div>
                 </div>
 
+                <div class="squad-status-container" id="hud-squad-status-rows">
+                    </div>
+            </div>
+
+        </div>
+
+        <div id="screen-result" class="screen hidden">
+            <h1 id="result-title">CRISTUS VICTOR!</h1>
+            <p id="result-desc">Ortodoxin står orubbad.</p>
+            <button class="ret-btn" onclick="location.reload()">Starta ny disputation</button>
         </div>
 
     </div>
