@@ -1,0 +1,112 @@
+[
+  {
+    "id": "gnosticism",
+    "name": "Gnosticismen",
+    "boss": "Valentinos",
+    "doldMekanikMod": "evangelist_penalty_-4",
+    "lairActions": {
+      "drev": "Valentinos sprider hemliga, esoteriska skrifter! Anhängarna skapar förvirring med dolda doktriner. Truppen drabbas av Disadvantage på alla handlingar.",
+      "han": "Gnostikernas elitistiska hån nöter ner er uthållighet! Truppen tar [X] HP i skada.",
+      "tidsanda": "Det gnostiska anspråket på högre andlig insikt paralyserar debatten! Truppen stoppas inför nästa runda."
+    }
+  },
+  {
+    "id": "arianism",
+    "name": "Arianismen",
+    "boss": "Arius",
+    "doldMekanikMod": "growth_multiplier_2",
+    "lairActions": {
+      "drev": "Arius piskar upp stämningen med medryckande poplåtar och slagord! Anhängarna blockerar dialogen. Truppen drabbas av Disadvantage.",
+      "han": "Den arianska massrörelsen sjunger ut heretiska slagord på gatorna! Truppen tar [X] HP i skada.",
+      "tidsanda": "Den arianska tidsandan sveper över basilikorna! Heresin har över 75% inflytande! Truppen lamslås fullständigt."
+    }
+  },
+  {
+    "id": "pelagianism",
+    "name": "Pelagianismen",
+    "boss": "Pelagius",
+    "doldMekanikMod": "immune_laran_while_legitimacy_active",
+    "lairActions": {
+      "drev": "Pelagius anklagar truppen för moralisk svaghet! Följarna kräver absolut egenkraft, vilket ger truppen Disadvantage.",
+      "han": "Pelagianernas fanatiska övertygelse om sin egen helighet slår mot apologeternas samveten! Truppen tar [X] HP i skada.",
+      "tidsanda": "Den pelagianska moralismen låser debattklimatet! Argumenten ignoreras och truppen stoppas."
+    }
+  },
+  {
+    "id": "donatism",
+    "name": "Donatismen",
+    "boss": "Donatus Magnus",
+    "doldMekanikMod": "heal_structure_+5_on_player_damage",
+    "lairActions": {
+      "drev": "Donatus Magnus förkastar truppens auktoritet från sina ockuperade kyrkor! Truppen drabbas av Disadvantage.",
+      "han": "Donatisternas aggressiva utbrytarrörelse slår mot apologeternas närvaro! Truppen tar [X] HP i skada.",
+      "tidsanda": "Donatisternas regionala blockad förlamar synodens administration! Truppen paralyseras."
+    }
+  },
+  {
+    "id": "katarerna",
+    "name": "Katarerna",
+    "boss": "Papa Niketas",
+    "doldMekanikMod": "healing_penalty_-3",
+    "lairActions": {
+      "drev": "Papa Niketas predikar om materians ondska! Askesen förvirrar apologeterna och ger truppen Disadvantage.",
+      "han": "Katarernas radikala försakelse slår mot truppens mentala uthållighet! Truppen tar [X] HP i skada.",
+      "tidsanda": "Katarernas extrema doktriner lamslår debattklimatet fullständigt! Truppen förlorar sina turer."
+    }
+  },
+  {
+    "id": "valdensianism",
+    "name": "Valdensianismen",
+    "boss": "Peter Waldo",
+    "doldMekanikMod": "exponential_growth_per_round",
+    "lairActions": {
+      "drev": "Peter Waldo skickar ut sina lekmän på gatorna! Underjordiska nätverk blockerar dialogen och ger truppen Disadvantage.",
+      "han": "Valdensernas folkrörelse sprider sig blixtsnabbt och tränger undan er närvaro! Truppen tar [X] HP i skada.",
+      "tidsanda": "Den valdensiska lekmannavågen fyller rummet helt! Heresin har över 75% inflytande! Truppen paralyseras fullständigt."
+    }
+  },
+  {
+    "id": "ikonoklasmen",
+    "name": "Ikonoklasmen",
+    "boss": "Kejsar Leo III",
+    "doldMekanikMod": "teacher_shepherd_penalty_-2_while_structure_active",
+    "lairActions": {
+      "drev": "Kejsar Leo III utfärdar ett nytt bildförbud! Kejserliga dekret ockuperar basilikorna och ger truppen Disadvantage.",
+      "han": "Soldaten verkställer kejsarens order och rensar ut helgedomarna! Det administrativa våldet gör [X] HP i skada på truppen.",
+      "tidsanda": "Kejsarmaktens totala blockad lamslår apologeternas röster! Heresin har över 75% inflytande! HELA TRUPPEN PARALYSERAS!"
+    }
+  },
+  {
+    "id": "trilingual",
+    "name": "Det trilinguala heresiet",
+    "boss": "Biskop Johannes av Venedig",
+    "doldMekanikMod": "laran_75_percent_resist_while_legitimacy_above_50",
+    "lairActions": {
+      "drev": "Biskop Johannes av Venedig förkunnar de tre heliga språken! Den uråldriga statusen tvingar truppen till Disadvantage.",
+      "han": "De latinska biskoparnas elitistiska förkastelse nöter ner apologeternas mod! Truppen tar [X] HP i skada.",
+      "tidsanda": "Den språkliga dogmatismen fryser debattklimatet helt! Heresin har över 75% inflytande! Truppen paralyseras."
+    }
+  },
+  {
+    "id": "upplysning",
+    "name": "Upplysningstiden",
+    "boss": "Voltaire",
+    "doldMekanikMod": "double_shield_damage",
+    "lairActions": {
+      "drev": "Voltaire publicerar en ny bitande traktat! Den skarpa skepticismen sprider osäkerhet och ger truppen Disadvantage.",
+      "han": "Voltaires vassa satir slår urskillningslöst mot er tro! Rationalismens flodvåg nöter ner er andliga hälsa med [X] HP i skada.",
+      "tidsanda": "Den skeptiska tidsandan dominerar akademierna totalt! Heresin har över 75% inflytande! Truppen paralyseras och tystas inför nästa runda."
+    }
+  },
+  {
+    "id": "nyateism",
+    "name": "Nyateismen",
+    "boss": "Richard Dawkins",
+    "doldMekanikMod": "damage_scales_with_followers",
+    "lairActions": {
+      "drev": "Richard Dawkins startar en aggressiv mediekampanj! Retorisk förvirring sprids i debatten och truppen drabbas av Disadvantage.",
+      "han": "Dawkins piskar upp massorna till ett samordnat medialt drev! Truppen tar [X] HP i skada.",
+      "tidsanda": "Det sekulära mediedrevet når ett öronbedövande crescendo! Heresin har över 75% inflytande! HELA TRUPPEN PARALYSERAS!"
+    }
+  }
+]
