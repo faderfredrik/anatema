@@ -23,13 +23,19 @@ async function laddaSpelData() {
         const heresierRes = await fetch('heresier.json');
         globalHeresier = await heresierRes.json();
         
-        console.log("Skafferiet är laddat! Teologer och Heresier är ready.");
+        console.log("Skafferiet synkat! V2-motorn redo.");
         
-        // MOCKUP: Vi tvingar spelet att starta med en testsquad för att du ska se hur UX ser ut direkt!
-        startaTestStrid();
+        // Låser upp knappen på startskärmen så fort JSON-datan laddats klart!
+        const enterBtn = document.getElementById('start-enter-btn');
+        if (enterBtn) enterBtn.disabled = false;
+        
+        const statusTxt = document.getElementById('loading-status');
+        if (statusTxt) statusTxt.innerText = "Kyrkofäderna har samlats. Tryck ovan för att börja.";
         
     } catch (error) {
-        console.error("Kunde inte ladda JSON-datafilerna:", error);
+        console.error("Kunde inte ladda JSON-filer:", error);
+        const statusTxt = document.getElementById('loading-status');
+        if (statusTxt) statusTxt.innerText = "FEL: Kunde inte ladda speldata. Kontrollera dina JSON-filer.";
     }
 }
 
