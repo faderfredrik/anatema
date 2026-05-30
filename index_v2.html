@@ -119,7 +119,6 @@
         .mini-bar-fill.str { background: #55ffff; }
         .mini-bar-fill.leg { background: #ffff55; }
 
-        /* KORRIGERING: Ändrat till standardblock med 100% höjd. Löser Chrome-kollapsen helt! */
         .battle-log-scroll { background: rgba(16, 10, 10, 0.9); border: 2px solid #5e1a1a; border-radius: 4px; padding: 12px; overflow-y: auto; font-size: 11px; color: #f2d6d6; box-shadow: inset 0 0 10px #000; height: 100%; block-size: border-box; }
         .log-entry { margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; line-height: 1.4; text-align: left; }
 
@@ -134,11 +133,18 @@
         .action-node-btn { background: rgba(255,255,85,0.03); border: 1px solid #555; padding: 10px; color: #fff; font-size: 12px; border-radius: 3px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; width: 100%; font-family: inherit; }
         .action-node-btn:hover { border-color: #ffff55; background: rgba(255,255,85,0.12); }
 
+        /* KORRIGERING: Ny JRPG-anpassad rutnätslayout för statusraderna i truppen */
         .squad-status-container { display: flex; flex-direction: column; gap: 4px; justify-content: center; }
-        .hud-party-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.5); border: 1px solid #2a2a3a; padding: 6px 10px; border-radius: 4px; font-size: 11px; }
+        .hud-party-row { display: grid; grid-template-columns: 120px 45px 1fr 65px; align-items: center; background: rgba(0,0,0,0.5); border: 1px solid #2a2a3a; padding: 5px 8px; border-radius: 4px; font-size: 11px; gap: 6px; }
         .hud-party-row.dead { border-color: #551a1a; background: rgba(40,10,10,0.3); opacity: 0.6; }
-        .hud-party-name { font-weight: bold; color: #00ff00; }
-        .hud-party-vitals { color: #fff; font-family: inherit; }
+        .hud-party-name { font-weight: bold; color: #00ff00; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .hud-shield-status { color: #55ffff; font-weight: bold; font-size: 10px; display: flex; align-items: center; }
+        
+        .hud-hp-bar-container { height: 12px; background: #200; border: 1px solid #555; border-radius: 2px; position: relative; overflow: hidden; }
+        .hud-hp-bar-fill { height: 100%; background: #22cc22; width: 100%; transition: width 0.3s; }
+        .hud-hp-bar-label { position: absolute; width: 100%; text-align: center; font-size: 9px; font-weight: bold; top: -1px; color: #fff; text-shadow: 1px 1px #000; font-family: monospace; }
+        
+        .hud-de-status { color: #00ccff; letter-spacing: 1px; font-size: 11px; text-align: right; font-family: monospace; }
 
         /* --- SKÄRM 5: RESULTAT --- */
         #screen-result { justify-content: center; align-items: center; gap: 15px; text-align: center; }
