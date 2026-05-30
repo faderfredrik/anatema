@@ -63,70 +63,82 @@
         .heresy-card:hover { border-color: #ffff55; background: rgba(255,255,85,0.05); transform: scale(1.01); }
         .heresy-card h3 { font-size: 16px; margin-bottom: 5px; }
 
-        /* --- SKÄRM 3: SYNODEN (TRUPPBYGGE) --- */
-        .synod-layout { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; flex-grow: 1; min-height: 0; }
+        /* --- SKÄRM 3: SYNODEN (TRUPPBYGGE MED RETRO INSPEKTÖR) --- */
+        .synod-layout { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px; flex-grow: 1; min-height: 0; }
         .tab-menu { display: flex; gap: 5px; margin-bottom: 10px; border-bottom: 2px solid #3a3a4a; }
         .tab-btn { background: rgba(0,0,0,0.4); border: 2px solid #3a3a4a; border-bottom: none; padding: 8px 14px; color: #888; cursor: pointer; font-size: 11px; text-transform: uppercase; font-weight: bold; }
         .tab-btn.active { background: #ffff55; color: #000; border-color: #ffff55; }
-        .roster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; overflow-y: auto; height: 260px; padding-right: 5px; }
-        .char-card { background: rgba(0,0,0,0.3); border: 2px solid #3a3a4a; padding: 8px; border-radius: 4px; cursor: pointer; font-size: 11px; }
+        .roster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; overflow-y: auto; height: 230px; padding-right: 5px; margin-bottom: 15px; }
+        
+        .char-card { background: rgba(0,0,0,0.3); border: 2px solid #3a3a4a; padding: 10px; border-radius: 4px; cursor: pointer; font-size: 11px; transition: border 0.2s; }
         .char-card:hover { border-color: #ffff55; }
         .char-card.selected { border-color: #00ff00; background: rgba(0,255,0,0.05); }
         
-        .squad-preview-zone { display: flex; flex-direction: column; background: rgba(0,0,0,0.5); border: 2px solid #3a3a4a; padding: 15px; border-radius: 4px; height: 100%; overflow-y: auto; }
-        .squad-vertical-list { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
-        .squad-slot-item { background: rgba(0,0,0,0.4); border: 1px dashed #555; padding: 10px; font-size: 12px; border-radius: 4px; display: flex; align-items: center; gap: 10px; }
+        .squad-bottom-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; min-height: 0; }
+        .squad-preview-zone { display: flex; flex-direction: column; background: rgba(0,0,0,0.5); border: 2px solid #3a3a4a; padding: 12px; border-radius: 4px; }
+        .squad-vertical-list { display: flex; flex-direction: column; gap: 6px; margin-top: 5px; }
+        .squad-slot-item { background: rgba(0,0,0,0.4); border: 1px dashed #555; padding: 8px; font-size: 11px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .squad-slot-item.filled { border-style: solid; border-color: #00ff00; color: #00ff00; font-weight: bold; }
-        .synergy-box { background: rgba(255,255,85,0.03); border: 1px solid #ffff55; padding: 10px; border-radius: 4px; font-size: 11px; min-height: 80px; margin-top: 10px; }
+        .squad-slot-item .remove-trigger { color: #ff5555; font-weight: bold; font-size: 14px; }
+        .synergy-box { background: rgba(255,255,85,0.02); border: 1px dashed #ffff55; padding: 10px; border-radius: 4px; font-size: 11px; flex-grow: 1; margin-top: 5px; }
+
+        /* JRPG INSPEKTORPANEL (HÖGERSIDAN) */
+        .inspector-panel { display: flex; flex-direction: column; background: rgba(0,0,0,0.4); border: 2px solid #3a3a4a; padding: 20px; border-radius: 4px; min-height: 0; justify-content: space-between; }
+        #char-detail-view { flex-grow: 1; overflow-y: auto; padding-right: 5px; margin-bottom: 15px; }
+        .placeholder-text { color: #666; font-style: italic; text-align: center; margin-top: 50px; font-size: 12px; }
+        
+        .inspector-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #3a3a4a; padding-bottom: 8px; margin-bottom: 10px; }
+        .inspector-quote { background: rgba(0,0,0,0.5); padding: 8px; border-left: 3px solid #ffff55; margin-bottom: 15px; font-size: 12px; }
+        .inspector-stats-section h3 { font-size: 12px; margin-bottom: 8px; color: #55ffff; }
+        .effekt-beskrivning { color: #00ff00; margin-top: 5px; display: block; }
+        
+        button.green-confirm-btn { background-color: #0b260b; color: #fff; border: 2px solid #1a5e1a; width: 100%; padding: 12px; font-weight: bold; font-size: 13px; text-transform: uppercase; cursor: pointer; border-radius: 4px; box-shadow: 0 4px 0 #000; }
+        button.green-confirm-btn:hover:not(:disabled) { background-color: #00ff00; color: #000; border-color: #000; }
+        button.green-confirm-btn:disabled { opacity: 0.3; cursor: not-allowed; background-color: #222; border-color: #444; color: #666; box-shadow: none; }
 
         /* --- SKÄRM 4: STRIDSSKÄRM --- */
         #screen-battle { padding: 0; display: grid; grid-template-rows: 50px 25px 1fr 170px; }
         .timeline-zone { display: flex; justify-content: flex-end; align-items: center; padding-right: 20px; background: rgba(0,0,0,0.5); border-bottom: 1px solid #2a2a3a; }
         .timeline-box { display: flex; gap: 5px; background: #0a0a14; border: 2px solid #444; padding: 3px; border-radius: 4px; }
-        .timeline-node { width: 34px; height: 34px; background: #151522; border: 1px solid #666; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 9px; font-weight: bold; border-radius: 2px; }
-        .timeline-node img { width: 18px; height: 18px; object-fit: contain; }
+        .timeline-node { padding: 0 8px; height: 34px; background: #151522; border: 1px solid #666; display: flex; justify-content: center; align-items: center; font-size: 10px; font-weight: bold; border-radius: 2px; color: #aaa; }
         .timeline-node.active { border-color: #ffff55; background: #3d3d1a; color: #ffff55; box-shadow: 0 0 8px #ffff55; }
-        .timeline-node.lair { border-color: #ff5555; background: #3d1a1a; color: #ff5555; }
+        .timeline-node.lair-node { border-color: #ff5555; background: #3d1a1a; color: #ff5555; }
 
         .influence-zone { padding: 4px 20px; background: rgba(0,0,0,0.3); }
         .influence-container { width: 100%; height: 14px; border: 2px solid #444; background: #000066; display: flex; border-radius: 3px; overflow: hidden; position: relative; }
         .influence-red-bar { background: #990000; height: 100%; transition: width 0.4s ease; width: 40%; }
-        .influence-text-label { position: absolute; width: 100%; text-align: center; font-size: 9px; font-weight: bold; top: 0; left: 0; line-height: 10px; text-shadow: 1px 1px #000; color: #aaa; }
+        .influence-text-label { position: absolute; width: 100%; text-align: center; font-size: 9px; font-weight: bold; top: 2px; left: 0; line-height: 10px; text-shadow: 1px 1px #000; color: #fff; letter-spacing: 1px; }
 
-        .battle-arena { display: grid; grid-template-columns: 1fr 360px; gap: 15px; padding: 15px; min-height: 0; }
+        .battle-arena { display: grid; grid-template-columns: 1fr 380px; gap: 15px; padding: 15px; min-height: 0; }
         .arena-graphics { position: relative; background: rgba(0,0,0,0.2); border-radius: 4px; border: 1px solid rgba(255,255,255,0.05); }
         
-        .boss-hp-cluster { position: absolute; left: 20px; top: 20px; background: rgba(0,0,0,0.6); border: 1px solid #ff5555; padding: 8px; border-radius: 4px; width: 220px; display: flex; flex-direction: column; gap: 5px; }
+        .boss-hp-cluster { position: absolute; left: 20px; top: 20px; background: rgba(0,0,0,0.75); border: 2px solid #ff5555; padding: 10px; border-radius: 4px; width: 250px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 4px 10px #000; }
         .pillar-mini-row { font-size: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .mini-bar-bg { width: 100px; height: 8px; background: #300; border: 1px solid #555; border-radius: 1px; overflow: hidden; }
+        .mini-bar-bg { width: 110px; height: 8px; background: #200; border: 1px solid #555; border-radius: 1px; overflow: hidden; }
         .mini-bar-fill { height: 100%; background: #ff5555; width: 100%; transition: width 0.3s; }
         .mini-bar-fill.str { background: #55ffff; }
         .mini-bar-fill.leg { background: #ffff55; }
 
-        .battle-log-scroll { background: rgba(18, 12, 12, 0.75); border: 2px solid #4a1a1a; border-radius: 4px; padding: 12px; display: flex; flex-direction: column; justify-content: flex-end; overflow-y: auto; font-size: 11px; color: #f2d6d6; box-shadow: inset 0 0 10px #000; }
+        /* Det stora röda/mörka blocket för stridsloggen enligt din skiss */
+        .battle-log-scroll { background: rgba(16, 10, 10, 0.85); border: 2px solid #5e1a1a; border-radius: 4px; padding: 12px; display: flex; flex-direction: column; overflow-y: auto; font-size: 11px; color: #f2d6d6; box-shadow: inset 0 0 10px #000; }
+        .log-entry { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 2px; line-height: 1.4; }
 
         /* HUD PANEL */
-        .battle-hud-panel { display: grid; grid-template-columns: 1fr 380px; background: #090912; border-top: 3px solid #2a2a3a; padding: 10px; gap: 15px; }
+        .battle-hud-panel { display: grid; grid-template-columns: 1fr 400px; background: #090912; border-top: 3px solid #2a2a3a; padding: 10px; gap: 15px; }
         .chained-menu { display: flex; gap: 12px; background: #02020a; border: 2px solid #445; padding: 8px; border-radius: 4px; }
         .menu-left-nav { width: 110px; display: flex; flex-direction: column; gap: 4px; border-right: 1px solid #334; padding-right: 8px; }
-        .menu-right-actions { flex-grow: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; align-content: start; }
+        .menu-right-actions { flex-grow: 1; display: grid; grid-template-columns: 1fr; gap: 6px; align-content: start; }
         
-        .c-btn { background: transparent; color: #778; border: none; text-align: left; font-size: 11px; padding: 5px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+        .c-btn { background: transparent; color: #778; border: none; text-align: left; font-size: 11px; padding: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
         .c-btn:hover, .c-btn.active { color: #ffff55; background: rgba(255,255,85,0.1); }
-        .action-node-btn { background: rgba(255,255,255,0.03); border: 1px solid #444; padding: 6px; color: #fff; font-size: 11px; border-radius: 2px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; }
-        .action-node-btn:hover { border-color: #ffff55; background: rgba(255,255,85,0.08); }
+        .action-node-btn { background: rgba(255,255,85,0.03); border: 1px solid #555; padding: 10px; color: #fff; font-size: 12px; border-radius: 3px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; width: 100%; font-family: inherit; }
+        .action-node-btn:hover { border-color: #ffff55; background: rgba(255,255,85,0.12); }
 
         .squad-status-container { display: flex; flex-direction: column; gap: 4px; justify-content: center; }
-        .hud-party-row { display: grid; grid-template-columns: 24px 34px 90px 1fr 65px; align-items: center; background: rgba(0,0,0,0.4); border: 1px solid #2a2a3a; padding: 2px 6px; border-radius: 3px; font-size: 11px; }
-        .hud-avatar-frame { width: 20px; height: 20px; object-fit: contain; }
-        .hud-shield-badge { color: #55ffff; font-weight: bold; font-size: 10px; }
-        .hud-char-name { font-weight: bold; color: #aaa; }
-        .hud-char-name.active-turn { color: #ffff55; text-shadow: 0 0 5px #ffff55; }
-        
-        .hud-bar { height: 9px; background: #200; border: 1px solid #555; border-radius: 2px; position: relative; margin-right: 5px; overflow: hidden; }
-        .hud-bar-fill { height: 100%; background: #22cc22; width: 100%; transition: width 0.3s; }
-        .hud-bar-fill.de { background: #00ccff; }
-        .hud-bar-label { position: absolute; width: 100%; text-align: right; padding-right: 4px; font-size: 8px; font-weight: bold; top: -1px; color: #fff; text-shadow: 1px 1px #000; }
+        .hud-party-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.5); border: 1px solid #2a2a3a; padding: 6px 10px; border-radius: 4px; font-size: 11px; }
+        .hud-party-row.dead { border-color: #551a1a; background: rgba(40,10,10,0.3); opacity: 0.6; }
+        .hud-party-name { font-weight: bold; color: #00ff00; }
+        .hud-party-vitals { color: #fff; font-family: inherit; }
 
         /* --- SKÄRM 5: RESULTAT --- */
         #screen-result { justify-content: center; align-items: center; gap: 15px; text-align: center; }
@@ -158,27 +170,40 @@
         <div id="screen-synod" class="screen hidden">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <h2>Synoden (Truppbygge)</h2>
-                <h4 id="TK-budget-label" style="color:#ffff55;">TK-Budget: 500 / 500</h4>
+                <h4 id="TK-budget-label" style="color:#ffff55;">TK-Budget: 500 / 500 TK</h4>
             </div>
             
             <div class="synod-layout">
-                <div>
+                <div style="display: flex; flex-direction: column; min-height: 0;">
                     <div class="tab-menu">
                         <button class="tab-btn active" onclick="filtreraMentalitet('Monastiker', this)">Monastiker</button>
                         <button class="tab-btn" onclick="filtreraMentalitet('Filosof', this)">Filosof</button>
                         <button class="tab-btn" onclick="filtreraMentalitet('Magistrat', this)">Magistrat</button>
                         <button class="tab-btn" onclick="filtreraMentalitet('Retoriker', this)">Retoriker</button>
                     </div>
+                    
                     <div class="roster-grid" id="synod-roster-display"></div>
+                    
+                    <div class="squad-bottom-panel">
+                        <div class="squad-preview-zone">
+                            <h4>Aktuell Squad (Max 4)</h4>
+                            <div class="squad-vertical-list" id="squad-slots-display"></div>
+                        </div>
+                        <div class="squad-preview-zone">
+                            <h4>Aktiva Synergier</h4>
+                            <div class="synergy-box" id="synod-synergy-display">Inga synergier aktiverade.</div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="squad-preview-zone">
-                    <h4>Aktuell Squad (Max 4)</h4>
-                    <div class="squad-vertical-list" id="squad-slots-display"></div>
-                    <h4>Aktiva Synergier</h4>
-                    <div class="synergy-box" id="synod-synergy-display">Inga synergier aktiverade.</div>
+                <div class="inspector-panel">
+                    <div id="char-detail-view">
+                        <p class="placeholder-text">Välj en teolog till vänster för att granska deras D&D-stats och citat innan de rekryteras.</p>
+                    </div>
                     
-                    <button class="ret-btn" id="start-battle-confirm-btn" disabled style="margin-top:auto; width:100%;" onclick="initieraD20Strid()">Starta disputation &rarr;</button>
+                    <button class="ret-btn" id="start-battle-confirm-btn" disabled style="width:100%; padding:12px; background-color: #1a1a3a; border-color: #ffff55;" onclick="initieraD20Strid()">
+                        Starta disputation &rarr;
+                    </button>
                 </div>
             </div>
         </div>
@@ -191,16 +216,16 @@
             <div class="influence-zone">
                 <div class="influence-container">
                     <div class="influence-red-bar" id="hud-influence-fill"></div>
-                    <div class="influence-text-label">FLÖDE ÖVER MASSORNA (BLÅ = ORTODOXI | RÖD = KÄTTERI)</div>
+                    <div class="influence-text-label">FLÖDE ÖVER FÖLJARNA (BLÅ = ORTODOXI | RÖD = KÄTTERI)</div>
                 </div>
             </div>
 
             <div class="battle-arena">
                 <div class="arena-graphics" id="battle-bg-layer">
                     <div class="boss-hp-cluster">
-                        <h4 id="hud-boss-name" style="margin-bottom:2px; font-size:12px;">Boss</h4>
+                        <h4 id="hud-boss-name" style="margin-bottom:2px; font-size:12px;">Kätteriets Kärna</h4>
                         <div class="pillar-mini-row">
-                            <span>📜 LÄRAN (Kärna):</span>
+                            <span>📜 LÄRAN (HP):</span>
                             <div class="mini-bar-bg"><div class="mini-bar-fill" id="bar-laran"></div></div>
                         </div>
                         <div class="pillar-mini-row">
@@ -220,12 +245,13 @@
             <div class="battle-hud-panel">
                 <div class="chained-menu">
                     <div class="menu-left-nav">
-                        <div style="font-size:9px; color:#ffff55; margin-bottom:4px;" id="hud-active-name">TUR: -</div>
+                        <div style="font-size:9px; color:#ffff55; margin-bottom:6px;" id="hud-active-name">TUR: -</div>
                         <button class="c-btn active" id="btn-nav-attack" onclick="bytSubMeny('attack')">Attack</button>
                         <button class="c-btn" id="btn-nav-skills" onclick="bytSubMeny('skills')">Skills</button>
                         <button class="c-btn" id="btn-nav-items" onclick="bytSubMeny('items')">Items</button>
                     </div>
-                    <div class="menu-right-actions" id="hud-sub-actions"></div>
+                    <div class="menu-right-actions" id="hud-sub-actions">
+                        </div>
                 </div>
 
                 <div class="squad-status-container" id="hud-squad-status-rows"></div>
@@ -233,7 +259,7 @@
         </div>
 
         <div id="screen-result" class="screen hidden">
-            <h1 id="result-title">CRISTUS VICTOR!</h1>
+            <h1 id="result-title">CHRISTUS VICTOR!</h1>
             <p id="result-desc">Ortodoxin står orubbad.</p>
             <button class="ret-btn" onclick="location.reload()">Starta ny disputation</button>
         </div>
@@ -241,5 +267,79 @@
     </div>
 
     <script src="motor.js"></script>
+
+    <script>
+        // Sparar undan originalvyn från spelmotorn
+        const originalUppdateraUX = window.uppdateraUXGranssnitt;
+        
+        // Vi utökar gränssnittshanteraren så den ritar ut knapparna live efter varje tur!
+        window.uppdateraUXGranssnitt = function() {
+            if (originalUppdateraUX) originalUppdateraUX();
+            
+            // Uppdatera heresiens bossnamn live i klustret
+            if (window.currentHeresy) {
+                const bossNameEl = document.getElementById('hud-boss-name');
+                if (bossNameEl) bossNameEl.innerText = window.currentHeresy.boss.toUpperCase() + " (" + window.currentHeresy.name + ")";
+            }
+            
+            const activeNameEl = document.getElementById('hud-active-name');
+            const subActionsEl = document.getElementById('hud-sub-actions');
+            
+            if (!activeNameEl || !subActionsEl) return;
+            
+            if (window.combatQueue && window.combatQueue.length > 0) {
+                let activeUnit = window.combatQueue[window.activeQueueIndex];
+                
+                if (activeUnit) {
+                    if (activeUnit.isPlayer) {
+                        let teolog = window.selectedSquad.find(s => s.id === activeUnit.id);
+                        if (teolog) {
+                            activeNameEl.innerText = "TUR: " + teolog.name.toUpperCase();
+                            activeNameEl.style.color = "#ffff55";
+                            
+                            // Töm och rita ut korrekta knappar baserat på vald sub-meny (Attack/Skills/Defend)
+                            subActionsEl.innerHTML = '';
+                            
+                            if (window.aktivSubMeny === 'attack') {
+                                let label = "Standardargument";
+                                if (teolog.klass === "Evangelist") label = "Pathos-vädjan (Omvänd Följare)";
+                                else if (teolog.klass === "Lärare") label = "Logos-argument (Skada Läran)";
+                                
+                                subActionsEl.innerHTML = `
+                                    <button class="action-node-btn" onclick="hanteraSpelarHandling('attack', ${teolog.id})">
+                                        <span>📜 ${label}</span>
+                                        <span style="color:#ffff55;">d20 + ${teolog.klass === "Evangelist" ? teolog.cha : teolog.int}</span>
+                                    </button>`;
+                            } 
+                            else if (window.aktivSubMeny === 'skills') {
+                                subActionsEl.innerHTML = `
+                                    <button class="action-node-btn" onclick="hanteraSpelarHandling('skills', ${teolog.id})">
+                                        <span>⚡ SIGNATUR: ${teolog.deHandlingNamn}</span>
+                                        <span style="color:#00ccff;">-${teolog.deKostnad} DE</span>
+                                    </button>`;
+                            } 
+                            else if (window.aktivSubMeny === 'items') {
+                                subActionsEl.innerHTML = `<div style="font-size:11px; color:#555; padding:8px; font-style:italic;">[ Items låses upp i framtida uppdatering ]</div>`;
+                            }
+                        }
+                    } else {
+                        // Det är fiendens (Boss/Lair) tur - inaktivera knappar temporärt
+                        activeNameEl.innerText = "TUR: " + activeUnit.name.toUpperCase();
+                        activeNameEl.style.color = activeUnit.id === "lair" ? "#ff5555" : "#ffaa00";
+                        subActionsEl.innerHTML = `<div style="font-size:11px; color:#ffff55; padding:8px; font-style:italic;">Heresin förbereder sitt drag...</div>`;
+                    }
+                }
+            }
+        };
+
+        // Synka flik-knapparna i JRPG-menyn visuellt vid klick
+        const originalBytSubMeny = window.bytSubMeny;
+        window.bytSubMeny = function(menyId) {
+            if (originalBytSubMeny) originalBytSubMeny(menyId);
+            document.querySelectorAll('.chained-menu .c-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.getElementById('btn-nav-' + menyId);
+            if (activeBtn) activeBtn.classList.add('active');
+        };
+    </script>
 </body>
 </html>
