@@ -63,7 +63,7 @@
         .heresy-card:hover { border-color: #ffff55; background: rgba(255,255,85,0.05); transform: scale(1.01); }
         .heresy-card h3 { font-size: 16px; margin-bottom: 5px; }
 
-        /* --- SKÄRM 3: SYNODEN (TRUPPBYGGE MED RETRO INSPEKTÖR) --- */
+        /* --- SKÄRM 3: SYNODEN --- */
         .synod-layout { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px; flex-grow: 1; min-height: 0; }
         .tab-menu { display: flex; gap: 5px; margin-bottom: 10px; border-bottom: 2px solid #3a3a4a; }
         .tab-btn { background: rgba(0,0,0,0.4); border: 2px solid #3a3a4a; border-bottom: none; padding: 8px 14px; color: #888; cursor: pointer; font-size: 11px; text-transform: uppercase; font-weight: bold; }
@@ -82,7 +82,6 @@
         .squad-slot-item .remove-trigger { color: #ff5555; font-weight: bold; font-size: 14px; }
         .synergy-box { background: rgba(255,255,85,0.02); border: 1px dashed #ffff55; padding: 10px; border-radius: 4px; font-size: 11px; flex-grow: 1; margin-top: 5px; }
 
-        /* JRPG INSPEKTORPANEL (HÖGERSIDAN) */
         .inspector-panel { display: flex; flex-direction: column; background: rgba(0,0,0,0.4); border: 2px solid #3a3a4a; padding: 20px; border-radius: 4px; min-height: 0; justify-content: space-between; }
         #char-detail-view { flex-grow: 1; overflow-y: auto; padding-right: 5px; margin-bottom: 15px; }
         .placeholder-text { color: #666; font-style: italic; text-align: center; margin-top: 50px; font-size: 12px; }
@@ -101,7 +100,8 @@
         .timeline-zone { display: flex; justify-content: flex-end; align-items: center; padding-right: 20px; background: rgba(0,0,0,0.5); border-bottom: 1px solid #2a2a3a; }
         .timeline-box { display: flex; gap: 5px; background: #0a0a14; border: 2px solid #444; padding: 3px; border-radius: 4px; }
         .timeline-node { padding: 0 8px; height: 34px; background: #151522; border: 1px solid #666; display: flex; justify-content: center; align-items: center; font-size: 10px; font-weight: bold; border-radius: 2px; color: #aaa; }
-        .timeline-node.active { border-color: #ffff55; background: #3d3d1a; color: #ffff55; box-shadow: 0 0 8px #ffff55; }
+        
+        .timeline-node.active { border-color: #ffff55 !important; background: #3d3d1a !important; color: #ffff55 !important; box-shadow: 0 0 8px #ffff55 !important; }
         .timeline-node.lair-node { border-color: #ff5555; background: #3d1a1a; color: #ff5555; }
 
         .influence-zone { padding: 4px 20px; background: rgba(0,0,0,0.3); }
@@ -119,7 +119,6 @@
         .mini-bar-fill.str { background: #55ffff; }
         .mini-bar-fill.leg { background: #ffff55; }
 
-        /* Det stora röda/mörka blocket för stridsloggen enligt din skiss */
         .battle-log-scroll { background: rgba(16, 10, 10, 0.85); border: 2px solid #5e1a1a; border-radius: 4px; padding: 12px; display: flex; flex-direction: column; overflow-y: auto; font-size: 11px; color: #f2d6d6; box-shadow: inset 0 0 10px #000; }
         .log-entry { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 2px; line-height: 1.4; }
 
@@ -248,10 +247,10 @@
                         <div style="font-size:9px; color:#ffff55; margin-bottom:6px;" id="hud-active-name">TUR: -</div>
                         <button class="c-btn active" id="btn-nav-attack" onclick="bytSubMeny('attack')">Attack</button>
                         <button class="c-btn" id="btn-nav-skills" onclick="bytSubMeny('skills')">Skills</button>
+                        <button class="c-btn" id="btn-nav-defend" onclick="bytSubMeny('defend')">Defend</button>
                         <button class="c-btn" id="btn-nav-items" onclick="bytSubMeny('items')">Items</button>
                     </div>
-                    <div class="menu-right-actions" id="hud-sub-actions">
-                        </div>
+                    <div class="menu-right-actions" id="hud-sub-actions"></div>
                 </div>
 
                 <div class="squad-status-container" id="hud-squad-status-rows"></div>
@@ -267,79 +266,5 @@
     </div>
 
     <script src="motor.js"></script>
-
-    <script>
-        // Sparar undan originalvyn från spelmotorn
-        const originalUppdateraUX = window.uppdateraUXGranssnitt;
-        
-        // Vi utökar gränssnittshanteraren så den ritar ut knapparna live efter varje tur!
-        window.uppdateraUXGranssnitt = function() {
-            if (originalUppdateraUX) originalUppdateraUX();
-            
-            // Uppdatera heresiens bossnamn live i klustret
-            if (window.currentHeresy) {
-                const bossNameEl = document.getElementById('hud-boss-name');
-                if (bossNameEl) bossNameEl.innerText = window.currentHeresy.boss.toUpperCase() + " (" + window.currentHeresy.name + ")";
-            }
-            
-            const activeNameEl = document.getElementById('hud-active-name');
-            const subActionsEl = document.getElementById('hud-sub-actions');
-            
-            if (!activeNameEl || !subActionsEl) return;
-            
-            if (window.combatQueue && window.combatQueue.length > 0) {
-                let activeUnit = window.combatQueue[window.activeQueueIndex];
-                
-                if (activeUnit) {
-                    if (activeUnit.isPlayer) {
-                        let teolog = window.selectedSquad.find(s => s.id === activeUnit.id);
-                        if (teolog) {
-                            activeNameEl.innerText = "TUR: " + teolog.name.toUpperCase();
-                            activeNameEl.style.color = "#ffff55";
-                            
-                            // Töm och rita ut korrekta knappar baserat på vald sub-meny (Attack/Skills/Defend)
-                            subActionsEl.innerHTML = '';
-                            
-                            if (window.aktivSubMeny === 'attack') {
-                                let label = "Standardargument";
-                                if (teolog.klass === "Evangelist") label = "Pathos-vädjan (Omvänd Följare)";
-                                else if (teolog.klass === "Lärare") label = "Logos-argument (Skada Läran)";
-                                
-                                subActionsEl.innerHTML = `
-                                    <button class="action-node-btn" onclick="hanteraSpelarHandling('attack', ${teolog.id})">
-                                        <span>📜 ${label}</span>
-                                        <span style="color:#ffff55;">d20 + ${teolog.klass === "Evangelist" ? teolog.cha : teolog.int}</span>
-                                    </button>`;
-                            } 
-                            else if (window.aktivSubMeny === 'skills') {
-                                subActionsEl.innerHTML = `
-                                    <button class="action-node-btn" onclick="hanteraSpelarHandling('skills', ${teolog.id})">
-                                        <span>⚡ SIGNATUR: ${teolog.deHandlingNamn}</span>
-                                        <span style="color:#00ccff;">-${teolog.deKostnad} DE</span>
-                                    </button>`;
-                            } 
-                            else if (window.aktivSubMeny === 'items') {
-                                subActionsEl.innerHTML = `<div style="font-size:11px; color:#555; padding:8px; font-style:italic;">[ Items låses upp i framtida uppdatering ]</div>`;
-                            }
-                        }
-                    } else {
-                        // Det är fiendens (Boss/Lair) tur - inaktivera knappar temporärt
-                        activeNameEl.innerText = "TUR: " + activeUnit.name.toUpperCase();
-                        activeNameEl.style.color = activeUnit.id === "lair" ? "#ff5555" : "#ffaa00";
-                        subActionsEl.innerHTML = `<div style="font-size:11px; color:#ffff55; padding:8px; font-style:italic;">Heresin förbereder sitt drag...</div>`;
-                    }
-                }
-            }
-        };
-
-        // Synka flik-knapparna i JRPG-menyn visuellt vid klick
-        const originalBytSubMeny = window.bytSubMeny;
-        window.bytSubMeny = function(menyId) {
-            if (originalBytSubMeny) originalBytSubMeny(menyId);
-            document.querySelectorAll('.chained-menu .c-btn').forEach(btn => btn.classList.remove('active'));
-            const activeBtn = document.getElementById('btn-nav-' + menyId);
-            if (activeBtn) activeBtn.classList.add('active');
-        };
-    </script>
 </body>
 </html>
