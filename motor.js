@@ -263,7 +263,6 @@ function initieraD20Strid() {
     uppdateraUXGranssnitt();
     logSpelBatalj(`MÖTET HAR BÖRJAT! Strid mot villoläran: ${currentHeresy.name}.`);
 
-    // KORRIGERING: Kickstarta om datorn (Boss eller Lair) hamnade allra först i kön runda 1!
     let foerstaEnhet = combatQueue[0];
     if (foerstaEnhet && !foerstaEnhet.isPlayer) {
         if (foerstaEnhet.id === "boss") {
@@ -289,7 +288,6 @@ function byggInitiativKedja() {
     
     combatQueue.sort((a, b) => b.init - a.init);
     
-    // Lair Action läggs till fast på 20 (men förlorar lika-läge)
     let lairIndex = combatQueue.findIndex(enhet => enhet.init < 20);
     let lairNode = { isPlayer: false, id: "lair", name: "FÖLJARNA (Lair)", init: 20 };
     
@@ -483,7 +481,6 @@ function bytSubMeny(menyId) {
 function uppdateraUXGranssnitt() {
     if (!currentHeresy) return;
     
-    // 1. Synka heresiens mätare
     const elementMappning = {
         'bar-laran': `${(pHeresyLar / pMaxLar) * 100}%`,
         'bar-struktur': `${(pHeresyStr / pMaxStr) * 100}%`,
@@ -498,7 +495,6 @@ function uppdateraUXGranssnitt() {
     const bossNameEl = document.getElementById('hud-boss-name');
     if (bossNameEl) bossNameEl.innerText = currentHeresy.boss.toUpperCase() + " (" + currentHeresy.name + ")";
 
-    // 2. Synka partymätare
     const rowsBox = document.getElementById('hud-squad-status-rows');
     if (rowsBox) {
         rowsBox.innerHTML = '';
@@ -512,7 +508,6 @@ function uppdateraUXGranssnitt() {
         });
     }
     
-    // 3. GENERERA JRPG-MENYKNAPPAR DYNAMISKT UTIFRÅN TUR OCH KLASS
     const activeNameEl = document.getElementById('hud-active-name');
     const subActionsEl = document.getElementById('hud-sub-actions');
     
@@ -562,11 +557,9 @@ function uppdateraUXGranssnitt() {
             subActionsEl.innerHTML = `<div style="font-size:11px; color:#ffff55; padding:8px; font-style:italic;">Heresin utför sitt drag...</div>`;
         }
     }
-    
     ritaTidslinje();
 }
 
-// Globalexponering för HTML
 window.registreraSpelare = registreraSpelare;
 window.valjHeresiUtmaning = valjHeresiUtmaning;
 window.filtreraMentalitet = filtreraMentalitet;
