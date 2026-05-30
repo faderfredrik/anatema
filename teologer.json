@@ -169,7 +169,7 @@
     "startDE": 2,
     "deKostnad": 1,
     "deHandlingNamn": "Den lilla vägen",
-    "loggEffekt": "Ger en allierad en Trons sköld och ger Teresa själv Advantage på ditt nästa Dogma-försvar.",
+    "loggEffekt": "Ger en allierad en Trons sköld och ger Teresa själv Advantage på sitt nästa Dogma-försvar.",
     "citat": [
       "Min väg är den lilla kärlekens väg.",
       "Jag skall låta ett regn av rosor falla."
@@ -303,7 +303,7 @@
     "deHandlingNamn": "Helig textkritik",
     "loggEffekt": "Korrigerar felaktiga översättningar. Skadar Kärnan, och heresiens logistiska Struktur skakas i grunden.",
     "citat": [
-      "Att inte känna skrifterna är att inte känna Kristus.",
+      "Att inte känna skrifterna är att inte kennen Kristus.",
       "Min heliga vrede kokar!"
     ]
   },
@@ -479,7 +479,7 @@
     "deHandlingNamn": "Contra Mundum",
     "loggEffekt": "Står ensam mot världen! Omsluter hela truppen med en Trons sköld som helt hejdar kätteriets automatiska inflytandeökning.",
     "citat": [
-      "Gud blev vad vi är för att göra oss till vad han är.",
+      "Gud blev hvad vi är för att göra oss till vad han är.",
       "Arius splittrar kyrkans enhet!"
     ]
   },
