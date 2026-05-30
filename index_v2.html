@@ -122,7 +122,7 @@
         .battle-log-scroll { background: rgba(16, 10, 10, 0.9); border: 2px solid #5e1a1a; border-radius: 4px; padding: 12px; overflow-y: auto; font-size: 11px; color: #f2d6d6; box-shadow: inset 0 0 10px #000; height: 100%; block-size: border-box; }
         .log-entry { margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; line-height: 1.4; text-align: left; }
 
-        /* HUD PANEL */
+        /* HUD PANEL OCH TRUPPSTYLING */
         .battle-hud-panel { display: grid; grid-template-columns: 1fr 400px; background: #090912; border-top: 3px solid #2a2a3a; padding: 10px; gap: 15px; }
         .chained-menu { display: flex; gap: 12px; background: #02020a; border: 2px solid #445; padding: 8px; border-radius: 4px; }
         .menu-left-nav { width: 110px; display: flex; flex-direction: column; gap: 4px; border-right: 1px solid #334; padding-right: 8px; }
@@ -133,7 +133,7 @@
         .action-node-btn { background: rgba(255,255,85,0.03); border: 1px solid #555; padding: 10px; color: #fff; font-size: 12px; border-radius: 3px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; width: 100%; font-family: inherit; }
         .action-node-btn:hover { border-color: #ffff55; background: rgba(255,255,85,0.12); }
 
-        /* KORRIGERING: Ny JRPG-anpassad rutnätslayout för statusraderna i truppen */
+        /* NYA TRUPPMÄTARE REGLER */
         .squad-status-container { display: flex; flex-direction: column; gap: 4px; justify-content: center; }
         .hud-party-row { display: grid; grid-template-columns: 120px 45px 1fr 65px; align-items: center; background: rgba(0,0,0,0.5); border: 1px solid #2a2a3a; padding: 5px 8px; border-radius: 4px; font-size: 11px; gap: 6px; }
         .hud-party-row.dead { border-color: #551a1a; background: rgba(40,10,10,0.3); opacity: 0.6; }
@@ -145,54 +145,41 @@
         .hud-hp-bar-label { position: absolute; width: 100%; text-align: center; font-size: 9px; font-weight: bold; top: -1px; color: #fff; text-shadow: 1px 1px #000; font-family: monospace; }
         
         .hud-de-status { color: #00ccff; letter-spacing: 1px; font-size: 11px; text-align: right; font-family: monospace; }
-
-        /* --- SKÄRM 5: RESULTAT --- */
-        #screen-result { justify-content: center; align-items: center; gap: 15px; text-align: center; }
     </style>
 </head>
 <body>
-
     <div class="jrpg-viewport">
-
         <div id="screen-start" class="screen">
             <h1>Projekt Anatema II</h1>
             <div class="start-box">
-                <p>Välkommen apologet! Kyrkomötet är sammankallat för att möta tidsandans villoläror. <span class="text-highlight">Anatema V2</span> använder en dold d20-motor, taktiska tjänstegåvor och ett orubbligt Dogma för att utmana heretiskt inflytande.</p>
-                <br>
-                <p>Skriv in ditt biskopsnamn nedan för att samla din synod och träda i disputation mot massornas villfarelser:</p>
+                <p>Välkommen apologet! Kyrkomötet är sammankallat...</p>
                 <input type="text" id="player-name-input" class="start-input" placeholder="DITT NAMN" maxLength="12" value="BISKOP">
                 <br>
                 <button class="ret-btn" id="start-enter-btn" disabled onclick="registreraSpelare()">Träd in i Synoden &rarr;</button>
-                <div id="loading-status">Förbereder skafferiet, synkar teologiska skrifter...</div>
+                <div id="loading-status">Laddar...</div>
             </div>
         </div>
-
         <div id="screen-disputation" class="screen hidden">
             <h2>Välj Teologisk Utmaning</h2>
-            <p style="margin-bottom: 15px;">Konfrontera heresiens följarskara och bringa ordning i tidsandan:</p>
             <div class="heresy-grid" id="heresy-selection-list"></div>
         </div>
-
         <div id="screen-synod" class="screen hidden">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <h2>Synoden (Truppbygge)</h2>
+                <h2>Synoden</h2>
                 <h4 id="TK-budget-label" style="color:#ffff55;">TK-Budget: 500 / 500 TK</h4>
             </div>
-            
             <div class="synod-layout">
-                <div style="display: flex; flex-direction: column; min-height: 0;">
+                <div>
                     <div class="tab-menu">
                         <button class="tab-btn active" onclick="filtreraMentalitet('Monastiker', this)">Monastiker</button>
                         <button class="tab-btn" onclick="filtreraMentalitet('Filosof', this)">Filosof</button>
                         <button class="tab-btn" onclick="filtreraMentalitet('Magistrat', this)">Magistrat</button>
                         <button class="tab-btn" onclick="filtreraMentalitet('Retoriker', this)">Retoriker</button>
                     </div>
-                    
                     <div class="roster-grid" id="synod-roster-display"></div>
-                    
                     <div class="squad-bottom-panel">
                         <div class="squad-preview-zone">
-                            <h4>Aktuell Squad (Max 4)</h4>
+                            <h4>Aktuell Squad</h4>
                             <div class="squad-vertical-list" id="squad-slots-display"></div>
                         </div>
                         <div class="squad-preview-zone">
@@ -201,53 +188,31 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="inspector-panel">
-                    <div id="char-detail-view">
-                        <p class="placeholder-text">Välj en teolog till vänster för att granska deras D&D-stats och citat innan de rekryteras.</p>
-                    </div>
-                    
-                    <button class="ret-btn" id="start-battle-confirm-btn" disabled style="width:100%; padding:12px; background-color: #1a1a3a; border-color: #ffff55;" onclick="initieraD20Strid()">
-                        Starta disputation &rarr;
-                    </button>
+                    <div id="char-detail-view"><p class="placeholder-text">Välj teolog...</p></div>
+                    <button class="ret-btn" id="start-battle-confirm-btn" disabled style="width:100%;" onclick="initieraD20Strid()">Starta disputation &rarr;</button>
                 </div>
             </div>
         </div>
-
         <div id="screen-battle" class="screen hidden">
-            <div class="timeline-zone">
-                <div class="timeline-box" id="hud-timeline"></div>
-            </div>
-
+            <div class="timeline-zone"><div class="timeline-box" id="hud-timeline"></div></div>
             <div class="influence-zone">
                 <div class="influence-container">
                     <div class="influence-red-bar" id="hud-influence-fill"></div>
-                    <div class="influence-text-label">FLÖDE ÖVER FÖLJARNA (BLÅ = ORTODOXI | RÖD = KÄTTERI)</div>
+                    <div class="influence-text-label">FLÖDE ÖVER FÖLJARNA</div>
                 </div>
             </div>
-
             <div class="battle-arena">
                 <div class="arena-graphics" id="battle-bg-layer">
                     <div class="boss-hp-cluster">
-                        <h4 id="hud-boss-name" style="margin-bottom:2px; font-size:12px;">Kätteriets Kärna</h4>
-                        <div class="pillar-mini-row">
-                            <span>📜 LÄRAN (HP):</span>
-                            <div class="mini-bar-bg"><div class="mini-bar-fill" id="bar-laran"></div></div>
-                        </div>
-                        <div class="pillar-mini-row">
-                            <span>⚙️ STRUKTUR:</span>
-                            <div class="mini-bar-bg"><div class="mini-bar-fill str" id="bar-struktur"></div></div>
-                        </div>
-                        <div class="pillar-mini-row">
-                            <span>⚖️ LEGITIMITET:</span>
-                            <div class="mini-bar-bg"><div class="mini-bar-fill leg" id="bar-legitimitet"></div></div>
-                        </div>
+                        <h4 id="hud-boss-name">Kätteriets Kärna</h4>
+                        <div class="pillar-mini-row"><span>📜 LÄRAN:</span><div class="mini-bar-bg"><div class="mini-bar-fill" id="bar-laran"></div></div></div>
+                        <div class="pillar-mini-row"><span>⚙️ STRUKTUR:</span><div class="mini-bar-bg"><div class="mini-bar-fill str" id="bar-struktur"></div></div></div>
+                        <div class="pillar-mini-row"><span>⚖️ LEGITIMITET:</span><div class="mini-bar-bg"><div class="mini-bar-fill leg" id="bar-legitimitet"></div></div></div>
                     </div>
                 </div>
-                
                 <div class="battle-log-scroll" id="hud-battle-log"></div>
             </div>
-
             <div class="battle-hud-panel">
                 <div class="chained-menu">
                     <div class="menu-left-nav">
@@ -259,19 +224,14 @@
                     </div>
                     <div class="menu-right-actions" id="hud-sub-actions"></div>
                 </div>
-
                 <div class="squad-status-container" id="hud-squad-status-rows"></div>
             </div>
         </div>
-
         <div id="screen-result" class="screen hidden">
-            <h1 id="result-title">CHRISTUS VICTOR!</h1>
-            <p id="result-desc">Ortodoxin står orubbad.</p>
-            <button class="ret-btn" onclick="location.reload()">Starta ny disputation</button>
+            <h1>CHRISTUS VICTOR!</h1>
+            <button class="ret-btn" onclick="location.reload()">Starta ny</button>
         </div>
-
     </div>
-
     <script src="motor.js"></script>
 </body>
 </html>
