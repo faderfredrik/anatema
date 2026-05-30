@@ -3,6 +3,7 @@
  * Branch: anatema-v2
  */
 
+// Globala speltillstånd
 let globalTeologer = [];
 let globalHeresier = [];
 let currentHeresy = null;
@@ -12,18 +13,24 @@ let activeQueueIndex = 0;
 let combatRound = 1;
 let playerName = "ANONYM";
 
+// Stridsmätare (De 6 mekaniska pelarna)
 let pHeresyLar = 0, pMaxLar = 0;
 let pHeresyStr = 0, pMaxStr = 0;
 let pHeresyLeg = 0, pMaxLeg = 0;
 let heresyFollowersPct = 40; 
 
+// Status-effekter från Lair Actions
 let truppDisadvantage = false;
 let truppParalyserad = false; 
 let aktivSubMeny = "attack";
 
+// Inspektören (Synodens tvåstegsval)
 let previewedTeolog = null;
 let previewedKostnad = 0;
 
+// ==========================================
+// 0. RETROSÄKRAD LOGGFUNKTION
+// ==========================================
 function logSpelBatalj(msg) {
     const logBox = document.getElementById('hud-battle-log') || document.getElementById('disputation-log');
     if (logBox) {
@@ -33,6 +40,9 @@ function logSpelBatalj(msg) {
 }
 window.logSpelBatalj = logSpelBatalj;
 
+// ==========================================
+// 1. INITIALISERING OCH DATALADDNING
+// ==========================================
 async function laddaSpelData() {
     try {
         const teologerRes = await fetch('teologer.json');
@@ -49,6 +59,9 @@ async function laddaSpelData() {
 }
 window.addEventListener('DOMContentLoaded', laddaSpelData);
 
+// ==========================================
+// 2. SKÄRMHANTERING & REGISTRERING
+// ==========================================
 function changeScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
     const targetScreen = document.getElementById(screenId);
@@ -84,6 +97,9 @@ function valjHeresiUtmaning(heresyId) {
     if (forstaTab) forstaTab.click();
 }
 
+// ==========================================
+// 3. SYNODENS GRÄNSSNITT (TVÅSTEGSVAL)
+// ==========================================
 function filtreraMentalitet(mentalitet, btn) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
@@ -177,6 +193,9 @@ function uppdateraSynodUI() {
     if (startBtn) startBtn.disabled = (selectedSquad.length === 0);
 }
 
+// ==========================================
+// 4. STRIDSMOTOR & AOE-BALANSERING
+// ==========================================
 function initieraD20Strid() {
     if (selectedSquad.length === 0) return;
     pMaxLar = 150; pHeresyLar = pMaxLar;
@@ -220,11 +239,33 @@ function byggInitiativKedja() {
 function exekveraBossTur() {
     let levande = selectedSquad.filter(s => s.currentHP > 0);
     if (levande.length === 0) return;
-    let mltavla = levande[Math.floor(Math.random() * levande.length)];
-    let skada = Math.floor(Math.random() * 6) + 6; 
-    if (currentHeresy.id === "nyateism") skada += Math.floor(heresyFollowersPct / 10);
-    mltavla.currentHP = Math.max(0, mltavla.currentHP - skada);
-    window.logSpelBatalj(`${currentHeresy.boss} attackerar med kätterska argument! ${mltavla.name} tappar ${skada} HP.`);
+    
+    // KORRIGERING: Heresins ledare slår nu mot HELA truppen (Mass-AOE) för ökad strategisk utmaning
+    window.logSpelBatalj(`${currentHeresy.boss} dundrar ut skarpa kätterska argument mot hela synoden!`);
+    
+    levande.forEach(mltavla => {
+        let skada = Math.floor(Math.random() * 4) + 4; // Balanserad bas-skada (4-7 HP) då den träffar alla
+        if (currentHeresy.id === "nyateism") skada += Math.floor(heresyFollowersPct / 15);
+        
+        // Trons sköld absorbering
+        if (mltavla.shieldPool > 0) {
+            if (mltavla.shieldPool >= skada) {
+                mltavla.shieldPool -= skada;
+                skada = 0;
+            } else {
+                skada -= mltavla.shieldPool;
+                mltavla.shieldPool = 0;
+            }
+        }
+        
+        mltavla.currentHP = Math.max(0, mltavla.currentHP - skada);
+        if (skada > 0) {
+            window.logSpelBatalj(` > ${mltavla.name} tapper ${skada} HP.`);
+        } else {
+            window.logSpelBatalj(` > Trons sköld absorberade argumentet för ${mltavla.name}!`);
+        }
+    });
+
     kontrolleraMatchSlut();
     nastaTur();
 }
@@ -258,6 +299,9 @@ function exekveraLairAction() {
     nastaTur();
 }
 
+// ==========================================
+// 5. STRIDSHANDLINGAR (DYNAMISKA SKILLS)
+// ==========================================
 function hanteraSpelarHandling(handlingTyp, teologId) {
     let t = selectedSquad.find(s => s.id === teologId);
     if (!t || t.currentHP <= 0) return;
@@ -295,9 +339,29 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
     } else if (handlingTyp === 'skills') {
         if (t.currentDE < t.deKostnad) { window.logSpelBatalj(`${t.name} saknar DE för ${t.deHandlingNamn}!`); return; }
         t.currentDE -= t.deKostnad;
-        window.logSpelBatalj(`[SKILL] ${t.name} aktiverar: "${t.deHandlingNamn}"!`);
-        window.logSpelBatalj(` ⚡ En dogmatisk våg slår blint mot kätteriet: -15 Lära, -10 Struktur, -10 Legitimitet, -15% Följare.`);
-        pHeresyLar = Math.max(0, pHeresyLar - 15); pHeresyStr = Math.max(0, pHeresyStr - 10); pHeresyLeg = Math.max(0, pHeresyLeg - 10); heresyFollowersPct = Math.max(0, heresyFollowersPct - 15);
+        window.logSpelBatalj(`[SKILL] ${t.name} aktiverar signaturförmågan: "${t.deHandlingNamn}"!`);
+        
+        // KORRIGERING: Helt unika och dynamiska effekter per Klass och tillhörande stats!
+        if (t.klass === "Lärare") {
+            let dmg = 25 + (t.int * 3);
+            pHeresyLar = Math.max(0, pHeresyLar - dmg);
+            window.logSpelBatalj(` ⚡ En intellektuell dekonstruktion krossar heresiens kärna: Gillar -${dmg} skada på LÄRAN.`);
+        } else if (t.klass === "Evangelist") {
+            let pct = 20 + (t.cha * 3);
+            heresyFollowersPct = Math.max(0, heresyFollowersPct - pct);
+            window.logSpelBatalj(` ⚡ Ett kraftfullt väckelseläger skakar om gatorna: Omvänder -${pct}% av FÖLJARNA.`);
+        } else if (t.klass === "Herde") {
+            let legDmg = 20 + (t.wis * 2);
+            pHeresyLeg = Math.max(0, pHeresyLeg - legDmg);
+            selectedSquad.filter(s => s.currentHP > 0).forEach(s => s.currentHP = Math.min(s.maxHP, s.currentHP + 15));
+            window.logSpelBatalj(` ⚡ Herdens omsorg upprättar synoden (+15 HP) och underminerar moralen: -${legDmg} LEGITIMITET.`);
+        } else if (t.klass === "Apostel") {
+            let strDmg = 15 + (t.str * 2);
+            pHeresyStr = Math.max(0, pHeresyStr - strDmg);
+            selectedSquad.filter(s => s.currentHP > 0).forEach(s => s.shieldPool += 15);
+            window.logSpelBatalj(` ⚡ Trons fasta grund befäster försvaret (+15 Sköld) och raserar nätverket: -${strDmg} STRUKTUR.`);
+        }
+
     } else if (handlingTyp === 'defend') {
         if (t.klass === "Herde") {
             let heal = Math.floor(Math.random() * 6) + 1 + t.wis;
@@ -330,7 +394,7 @@ function nastaTur() {
         if (currentHeresy.id === "valdensianism" || currentHeresy.id === "arianism") {
             let tillvaxt = Math.floor(combatRound * 1.5) + 3;
             heresyFollowersPct = Math.min(100, heresyFollowersPct + tillvaxt);
-            window.logSpelBatalj(`[TIDSANDA] Kätteriets inflytande ökar naturligt med ${tillvaxt}%.`);
+            window.logSpelBatalj(`Kätteriets inflytande på gatorna ökar naturligt med ${tillvaxt}%.`);
         }
     }
     uppdateraUXGranssnitt();
@@ -374,7 +438,9 @@ function uppdateraUXGranssnitt() {
         selectedSquad.forEach(t => {
             let statusPrefix = t.currentHP <= 0 ? "[TYSTAD] " : "";
             let hpPct = Math.max(0, (t.currentHP / t.maxHP) * 100);
-            let shieldHTML = t.shieldPool > 0 ? `🛡️${t.shieldPool}` : `<span style="color:#334;">🛡️0</span>`;
+            
+            // KORRIGERING: Skölden ritas nu bara ut om dess pool faktiskt är större än 0
+            let shieldHTML = t.shieldPool > 0 ? `🛡️${t.shieldPool}` : '';
             
             let deSlotsHTML = '';
             let maxVisualSlots = Math.max(t.startDE, t.currentDE, 3); 
@@ -417,9 +483,10 @@ function uppdateraUXGranssnitt() {
                     if (aktivSubMeny === 'skills') {
                         subActionsEl.innerHTML = `<button class="action-node-btn" onclick="hanteraSpelarHandling('skills', ${teolog.id})"><span>⚡ SIGNATUR: ${teolog.deHandlingNamn}</span><span style="color:#00ccff;">-${teolog.deKostnad} DE</span></button>`;
                     } else if (aktivSubMeny === 'defend') {
+                        // KORRIGERING: Ändrat till teolog.klass (istället för trasiga t.klass) för att aktivera rutan felfritt!
                         let label = "Samla tankarna (Hela 5 HP)";
-                        if (t.klass === "Herde") label = "Helande ord (Hela truppen)";
-                        else if (t.klass === "Apostel") label = "Trons sköld (Skapa absorpsköld)";
+                        if (teolog.klass === "Herde") label = "Helande ord (Hela truppen)";
+                        else if (teolog.klass === "Apostel") label = "Trons sköld (Skapa absorpsköld)";
                         subActionsEl.innerHTML = `<button class="action-node-btn" onclick="hanteraSpelarHandling('defend', ${teolog.id})"><span>🛡️ ${label}</span><span style="color:#55ffff;">Mekanik: ${teolog.klass}</span></button>`;
                     } else if (aktivSubMeny === 'items') {
                         subActionsEl.innerHTML = `<div style="font-size:11px; color:#555; padding:8px; font-style:italic;">[ Saknar föremål i kistan just nu ]</div>`;
@@ -435,3 +502,13 @@ function uppdateraUXGranssnitt() {
     }
     ritaTidslinje();
 }
+
+window.registreraSpelare = registreraSpelare;
+window.valjHeresiUtmaning = valjHeresiUtmaning;
+window.filtreraMentalitet = filtreraMentalitet;
+window.klickaTeologSynod = klickaTeologSynod;
+window.bekraftaRekrytering = bekraftaRekrytering;
+window.taBortFranSquad = taBortFranSquad;
+window.initieraD20Strid = initieraD20Strid;
+window.bytSubMeny = bytSubMeny;
+window.hanteraSpelarHandling = hanteraSpelarHandling;
