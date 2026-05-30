@@ -1,5 +1,5 @@
 /**
- * PROJEKT ANATEMA V2 - Komplett Spelmotor (motor.js)
+ * PROJEKT ANATEMA V2 - Taktisk Spelmotor (motor.js)
  * Branch: anatema-v2
  */
 
@@ -29,7 +29,7 @@ let previewedTeolog = null;
 let previewedKostnad = 0;
 
 // ==========================================
-// 0. RETROSÄKRAD LOGGFUNKTION (Flyttad till toppen för att förhindra krascher)
+// 0. RETROSÄKRAD LOGGFUNKTION
 // ==========================================
 function logSpelBatalj(msg) {
     const logBox = document.getElementById('hud-battle-log') || document.getElementById('disputation-log');
@@ -40,7 +40,6 @@ function logSpelBatalj(msg) {
         console.log(`Anatema Systemlogg: ${msg}`);
     }
 }
-// Tvinga fönstret att registrera loggen omedelbart
 window.logSpelBatalj = logSpelBatalj;
 
 // ==========================================
@@ -61,8 +60,6 @@ async function laddaSpelData() {
         
     } catch (error) {
         console.error("Kunde inte ladda JSON-filer:", error);
-        const statusTxt = document.getElementById('loading-status');
-        if (statusTxt) statusTxt.innerText = "Ett kätterskt fel uppstod vid laddning av speldata.";
     }
 }
 window.addEventListener('DOMContentLoaded', laddaSpelData);
@@ -254,7 +251,7 @@ function uppdateraSynodUI() {
 }
 
 // ==========================================
-// 4. STRIDSMOTOR & TURHANTERING
+// 4. STRIDSMOTOR & TURORDNING
 // ==========================================
 function initieraD20Strid() {
     try {
@@ -278,7 +275,6 @@ function initieraD20Strid() {
         changeScreen('screen-battle');
         uppdateraUXGranssnitt();
         
-        // HÄR SKER DET SÄKRA ANROPET NU:
         window.logSpelBatalj(`MÖTET HAR BÖRJAT! Strid mot villoläran: ${currentHeresy.name}.`);
 
         let foerstaEnhet = combatQueue[0];
@@ -330,6 +326,11 @@ function exekveraBossTur() {
         let mltavla = levandeApologeter[Math.floor(Math.random() * levandeApologeter.length)];
         let skada = Math.floor(Math.random() * 6) + 6; 
         
+        // Särskild passiv: Nyateismens skada skalar med mängden följare
+        if (currentHeresy.id === "nyateism") {
+            skada += Math.floor(heresyFollowersPct / 10);
+        }
+        
         mltavla.currentHP = Math.max(0, mltavla.currentHP - skada);
         window.logSpelBatalj(`[BOSS TUR] ${currentHeresy.boss} attackerar med kätterska argument! ${mltavla.name} tappar ${skada} HP.`);
         
@@ -352,6 +353,7 @@ function exekveraLairAction() {
             truppDisadvantage = true;
         } else if (heresyFollowersPct > 35 && heresyFollowersPct <= 75) {
             let xSkadaBase = Math.floor(heresyFollowersPct / 5) + 4; 
+            
             let råText = currentHeresy.lairActions.han || "Truppen tar [X] HP i skada.";
             let dynamicText = råText.replace("[X]", xSkadaBase);
             window.logSpelBatalj(`💥 ${dynamicText}`);
@@ -384,63 +386,113 @@ function exekveraLairAction() {
     }
 }
 
+// ==========================================
+// 5. STRIDSHANDLINGAR (MED STRATEGISKA MÅL)
+// ==========================================
 function hanteraSpelarHandling(handlingTyp, teologId) {
     let t = selectedSquad.find(s => s.id === teologId);
     if (!t || t.currentHP <= 0) return;
 
     if (truppParalyserad) {
         window.logSpelBatalj(`${t.name} är paralyserad av tidsandan och kan inte tala!`);
-        nastaTur();
-        return;
+        nastaTur(); return;
     }
 
+    // D&D-TÄRNINGSMOTOR
     let rullning1 = Math.floor(Math.random() * 20) + 1;
     let rullning2 = Math.floor(Math.random() * 20) + 1;
     let d20 = rullning1;
+
+    // Särskild passiv: Ikonoklasmen straffar Lärare/Herde om deras Struktur är aktiv
+    let harIkonoklastStraff = (currentHeresy.id === "ikonoklasmen" && pHeresyStr > 0 && (t.klass === "Lärare" || t.klass === "Herde"));
     
     if (truppDisadvantage) {
         d20 = Math.min(rullning1, rullning2);
         window.logSpelBatalj(`[DISADVANTAGE] Rullar två tärningar (${rullning1}, ${rullning2}). Väljer: ${d20}`);
     }
 
-    if (handlingTyp === 'attack') {
-        if (d20 === 1) {
-            window.logSpelBatalj(`[NAT 1] ${t.name} snubblar katastrofalt på orden!`);
+    if (d20 === 1) {
+        window.logSpelBatalj(`[NAT 1] ${t.name} snubblar katastrofalt på orden! Handlingen misslyckas.`);
+        nastaTur(); return;
+    }
+    
+    let isCrit = (d20 === 20);
+    if (isCrit) window.logSpelBatalj(`[NAT 20] Perfekt replik! ${t.name} utropar: "${t.citat[0]}"`);
+
+    // HÄR KÖRS DET NYA STRATEGISKA TARGET-SYSTEMET:
+    if (handlingTyp === 'attack_laran') {
+        // PASSIV KONTROLL: Pelagianismen blockerar Läran helt om de har Legitimitet kvar
+        if (currentHeresy.id === "pelagianism" && pHeresyLeg > 0) {
+            window.logSpelBatalj(`[IMMUNITET] Pelagius heliga anseende skyddar deras Lära! Du måste sänka deras LEGITIMITET först!`);
             nastaTur(); return;
         }
-        
-        let isCrit = (d20 === 20);
-        if (isCrit) window.logSpelBatalj(`[NAT 20] Perfekt replik! ${t.name} ryter: "${t.citat[0]}"`);
 
-        if (t.klass === "Evangelist") {
-            let effekt = Math.floor(Math.random() * 6) + 1 + t.cha; 
-            if (isCrit) effekt *= 2;
-            heresyFollowersPct = Math.max(0, heresyFollowersPct - effekt);
-            window.logSpelBatalj(`${t.name} omvänder följare! Kätteriets grepp minskar med ${effekt}%.`);
-        } else if (t.klass === "Lärare") {
-            let skada = Math.floor(Math.random() * 8) + 1 + t.int; 
-            if (isCrit) skada *= 2;
-            pHeresyLar = Math.max(0, pHeresyLar - skada);
-            window.logSpelBatalj(`${t.name} dekonstruerar villolärans kärna och gör ${skada} Logos-skada.`);
-        } else {
-            let skada = Math.floor(Math.random() * 6) + 1;
-            pHeresyLar = Math.max(0, pHeresyLar - skada);
-            window.logSpelBatalj(`${t.name} argumenterar stabilt för ${skada} skada.`);
+        let basTarning = (t.klass === "Lärare") ? (Math.floor(Math.random() * 8) + 1) : (Math.floor(Math.random() * 4) + 1);
+        let modifierare = t.int - (harIkonoklastStraff ? 2 : 0);
+        let skada = basTarning + modifierare;
+        if (isCrit) skada = (basTarning * 2) + modifierare;
+        if (skada < 1) skada = 1;
+
+        // PASSIV KONTROLL: Det trilinguala heresiet motstår 75% av skadan vid hög legitimitet
+        if (currentHeresy.id === "trilingual" && pHeresyLeg > 30) {
+            skada = Math.max(1, Math.floor(skada * 0.25));
+            window.logSpelBatalj(`[MOTSTÅND] Uråldrig språklig status absorberar skadan.`);
         }
+
+        pHexLaransHP = pHeresyLar;
+        pHeresyLar = Math.max(0, pHeresyLar - skada);
+        window.logSpelBatalj(`${t.name} angriper Lärans kärna med Logos och gör ${skada} skada.`);
+
+        // PASSIV KONTROLL: Donatismen bygger struktur när man skadar deras lära
+        if (currentHeresy.id === "donatism" && pHeresyStr > 0) {
+            pHeresyStr = Math.min(pMaxStr, pHeresyStr + 5);
+            window.logSpelBatalj(`Donatisterna utnyttjar din attack för att stärka sin organisation (+5 STRUKTUR)!`);
+        }
+
+    } else if (handlingTyp === 'attack_struktur') {
+        let basTarning = (t.klass === "Apostel") ? (Math.floor(Math.random() * 8) + 1) : (Math.floor(Math.random() * 4) + 1);
+        let skada = basTarning + t.str;
+        if (isCrit) skada = (basTarning * 2) + t.str;
+        if (skada < 1) skada = 1;
+
+        pHeresyStr = Math.max(0, pHeresyStr - skada);
+        window.logSpelBatalj(`${t.name} saboterar heresiens nätverk och sänker STRUKTUREN med ${skada} punkter.`);
+
+    } else if (handlingTyp === 'attack_legitimer') {
+        let basTarning = (t.klass === "Herde") ? (Math.floor(Math.random() * 8) + 1) : (Math.floor(Math.random() * 4) + 1);
+        let modifierare = t.wis - (harIkonoklastStraff ? 2 : 0);
+        let skada = basTarning + modifierare;
+        if (isCrit) skada = (basTarning * 2) + modifierare;
+        if (skada < 1) skada = 1;
+
+        pHeresyLeg = Math.max(0, pHeresyLeg - skada);
+        window.logSpelBatalj(`${t.name} blottar heresiens moraliska brister och sänker LEGITIMITETEN med ${skada}.`);
+
+    } else if (handlingTyp === 'attack_foljare') {
+        let basTarning = (t.klass === "Evangelist") ? (Math.floor(Math.random() * 6) + 1) : (Math.floor(Math.random() * 4) + 1);
         
+        // PASSIV KONTROLL: Gnosticismen ger permanent straff på apologeternas pathos-vädjanden
+        let gnostikerStraff = (currentHeresy.id === "gnosticism") ? 4 : 0;
+        let effekt = basTarning + t.cha - gnostikerStraff;
+        if (isCrit) effekt = (basTarning * 2) + t.cha - gnostikerStraff;
+        if (effekt < 1) effekt = 1;
+
+        heresyFollowersPct = Math.max(0, heresyFollowersPct - effekt);
+        window.logSpelBatalj(`${t.name} talar till folkmassan med Pathos och omvänder ${effekt}% av FÖLJARNA.`);
+
     } else if (handlingTyp === 'skills') {
         if (t.currentDE < t.deKostnad) {
             window.logSpelBatalj(`${t.name} saknar DE för att aktivera ${t.deHandlingNamn}!`);
             return; 
         }
         t.currentDE -= t.deKostnad;
-        window.logSpelBatalj(`[SKILL] ${t.name} aktiverar: "${t.deHandlingNamn}"!`);
+        window.logSpelBatalj(`[SKILL] ${t.name} dundrar ut: "${t.deHandlingNamn}"!`);
         
-        if (t.id === 30) { 
-            heresyFollowersPct = Math.max(0, heresyFollowersPct - 25);
-        } else {
-            pHeresyLar = Math.max(0, pHeresyLar - 20);
-        }
+        // Slå sönder lite av varje som en kraftfull JRPG-skill
+        pHeresyLar = Math.max(0, pHeresyLar - 15);
+        pHeresyStr = Math.max(0, pHeresyStr - 10);
+        pHeresyLeg = Math.max(0, pHeresyLeg - 10);
+        heresyFollowersPct = Math.max(0, heresyFollowersPct - 15);
 
     } else if (handlingTyp === 'defend') {
         if (t.klass === "Herde") {
@@ -450,10 +502,10 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
         } else if (t.klass === "Apostel") {
             let skold = Math.floor(Math.random() * 8) + 1 + t.str; 
             t.shieldPool += skold;
-            window.logSpelBatalj(`${t.name} reser en Trons sköld som skyddar mot ${skold} skada.`);
+            window.logSpelBatalj(`${t.name} reser en Trons sköld som skyddar truppen mot ${skold} skada.`);
         } else {
             t.currentHP = Math.min(t.maxHP, t.currentHP + 5);
-            window.logSpelBatalj(`${t.name} samlar sig i bön och helar 5 HP.`);
+            window.logSpelBatalj(`${t.name} samlar sig i tyst bön och helar 5 HP.`);
         }
     }
 
@@ -472,7 +524,7 @@ function kontrolleraMatchSlut() {
         location.reload();
     } else if (selectedSquad.every(s => s.currentHP <= 0)) {
         window.logSpelBatalj(`[NEDERLAG] Din synod har tystats.`);
-        alert("Synoden fell!");
+        alert("Synoden föll!");
         location.reload();
     }
 }
@@ -482,6 +534,13 @@ function nastaTur() {
     if (activeQueueIndex === 0) {
         combatRound++;
         truppParalyserad = false; 
+
+        // RUNDBASERAD EFFEKT: Valdensianismen & Arianismen sprider sitt inflytande exponentiellt över tid
+        if (currentHeresy.id === "valdensianism" || currentHeresy.id === "arianism") {
+            let tillvaxt = Math.floor(combatRound * 1.5) + 3;
+            heresyFollowersPct = Math.min(100, heresyFollowersPct + tillvaxt);
+            window.logSpelBatalj(`[TIDSANDA] ${currentHeresy.boss} slagord ekar på gatorna! Kätteriets inflytande ökar med ${tillvaxt}%.`);
+        }
     }
     
     uppdateraUXGranssnitt();
@@ -515,7 +574,7 @@ function bytSubMeny(menyId) {
 }
 
 // ==========================================
-// 5. RENDERING OCH INTERN GRÄNSSNITTSBRYGGA
+// 6. DYNAMISK JRPG RENDERING AV TARGETS
 // ==========================================
 function uppdateraUXGranssnitt() {
     if (!currentHeresy) return;
@@ -560,39 +619,62 @@ function uppdateraUXGranssnitt() {
                 activeNameEl.style.color = "#ffff55";
                 
                 subActionsEl.innerHTML = '';
+                
+                // OM ANFALL VALTS: Rita ut det fullständiga 2x2 JRPG-rutnätet för strategiska val
                 if (aktivSubMeny === 'attack') {
-                    let label = "Standardargument";
-                    if (teolog.klass === "Evangelist") label = "Pathos-vädjan (Vänd Följare)";
-                    else if (teolog.klass === "Lärare") label = "Logos-argument (Skada Läran)";
+                    subActionsEl.style.display = 'grid';
+                    subActionsEl.style.gridTemplateColumns = '1fr 1fr';
+                    subActionsEl.style.gap = '6px';
                     
                     subActionsEl.innerHTML = `
-                        <button class="action-node-btn" onclick="hanteraSpelarHandling('attack', ${teolog.id})">
-                            <span>📜 ${label}</span>
-                            <span style="color:#ffff55;">d20 + ${teolog.klass === "Evangelist" ? teolog.cha : teolog.int}</span>
-                        </button>`;
-                } else if (aktivSubMeny === 'skills') {
-                    subActionsEl.innerHTML = `
-                        <button class="action-node-btn" onclick="hanteraSpelarHandling('skills', ${teolog.id})">
-                            <span>⚡ SIGNATUR: ${teolog.deHandlingNamn}</span>
-                            <span style="color:#00ccff;">-${teolog.deKostnad} DE</span>
-                        </button>`;
-                } else if (aktivSubMeny === 'defend') {
-                    let label = "Samla tankarna (Hela 5 HP)";
-                    if (teolog.klass === "Herde") label = "Helande ord (Hela truppen)";
-                    else if (teolog.klass === "Apostel") label = "Trons sköld (Absorbera skada)";
+                        <button class="action-node-btn" onclick="hanteraSpelarHandling('attack_laran', ${teolog.id})">
+                            <span>⚔️ Angrip Läran</span>
+                            <span style="color:#ffff55;">INT: +${teolog.int}</span>
+                        </button>
+                        <button class="action-node-btn" onclick="hanteraSpelarHandling('attack_struktur', ${teolog.id})">
+                            <span>🔨 Sänk Struktur</span>
+                            <span style="color:#ffff55;">STR: +${teolog.str}</span>
+                        </button>
+                        <button class="action-node-btn" onclick="hanteraSpelarHandling('attack_legitimer', ${teolog.id})">
+                            <span>⚖️ Sänk Legitimitet</span>
+                            <span style="color:#ffff55;">WIS: +${teolog.wis}</span>
+                        </button>
+                        <button class="action-node-btn" onclick="hanteraSpelarHandling('attack_foljare', ${teolog.id})">
+                            <span>📢 Omvänd Följare</span>
+                            <span style="color:#ffff55;">CHA: +${teolog.cha}</span>
+                        </button>
+                    `;
+                } else {
+                    // Återställ till standardlista vid andra menyer
+                    subActionsEl.style.display = 'grid';
+                    subActionsEl.style.gridTemplateColumns = '1fr';
                     
-                    subActionsEl.innerHTML = `
-                        <button class="action-node-btn" onclick="hanteraSpelarHandling('defend', ${teolog.id})">
-                            <span>🛡️ ${label}</span>
-                            <span style="color:#55ffff;">Modifierare: ${teolog.klass === "Herde" ? teolog.wis : teolog.str}</span>
-                        </button>`;
-                } else if (aktivSubMeny === 'items') {
-                    subActionsEl.innerHTML = `<div style="font-size:11px; color:#555; padding:8px; font-style:italic;">[ Saknar föremål i kistan just nu ]</div>`;
+                    if (aktivSubMeny === 'skills') {
+                        subActionsEl.innerHTML = `
+                            <button class="action-node-btn" onclick="hanteraSpelarHandling('skills', ${teolog.id})">
+                                <span>⚡ SIGNATUR: ${teolog.deHandlingNamn}</span>
+                                <span style="color:#00ccff;">-${teolog.deKostnad} DE</span>
+                            </button>`;
+                    } else if (aktivSubMeny === 'defend') {
+                        let label = "Samla tankarna (Hela 5 HP)";
+                        if (teolog.klass === "Herde") label = "Helande ord (Hela truppen)";
+                        else if (teolog.klass === "Apostel") label = "Trons sköld (Skapa absorpskold)";
+                        
+                        subActionsEl.innerHTML = `
+                            <button class="action-node-btn" onclick="hanteraSpelarHandling('defend', ${teolog.id})">
+                                <span>🛡️ ${label}</span>
+                                <span style="color:#55ffff;">Mekanik: ${teolog.klass}</span>
+                            </button>`;
+                    } else if (aktivSubMeny === 'items') {
+                        subActionsEl.innerHTML = `<div style="font-size:11px; color:#555; padding:8px; font-style:italic;">[ Saknar föremål i kistan just nu ]</div>`;
+                    }
                 }
             }
         } else {
             activeNameEl.innerText = "TUR: " + activeUnit.name.toUpperCase();
             activeNameEl.style.color = activeUnit.id === "lair" ? "#ff5555" : "#ffaa00";
+            subActionsEl.style.display = 'grid';
+            subActionsEl.style.gridTemplateColumns = '1fr';
             subActionsEl.innerHTML = `<div style="font-size:11px; color:#ffff55; padding:8px; font-style:italic;">Heresin utför sitt drag...</div>`;
         }
     }
