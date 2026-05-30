@@ -239,37 +239,43 @@ function uppdateraSynodUI() {
 }
 
 // ==========================================
-// 4. STRIDSMOTOR & TUR-KICKSTART
+// 4. STRIDSMOTOR & TRY-CATCH SYSTEM SÄKRING
 // ==========================================
 function initieraD20Strid() {
-    if (selectedSquad.length === 0) return;
+    try {
+        if (selectedSquad.length === 0) return;
 
-    pMaxLar = 150; pHeresyLar = pMaxLar;
-    pMaxStr = 50; pHeresyStr = pMaxStr;
-    pMaxLeg = 60; pHeresyLeg = pMaxLeg;
-    heresyFollowersPct = 40; 
-    combatRound = 1;
-    truppDisadvantage = false;
-    truppParalyserad = false;
-    aktivSubMeny = "attack";
-    
-    selectedSquad.forEach(t => {
-        let beraknatHP = (t.con * 15) + 45;
-        t.maxHP = beraknatHP; t.currentHP = beraknatHP; t.currentDE = t.startDE; t.shieldPool = 0;
-    });
-    
-    byggInitiativKedja();
-    changeScreen('screen-battle');
-    uppdateraUXGranssnitt();
-    logSpelBatalj(`MÖTET HAR BÖRJAT! Strid mot villoläran: ${currentHeresy.name}.`);
+        pMaxLar = 150; pHeresyLar = pMaxLar;
+        pMaxStr = 50; pHeresyStr = pMaxStr;
+        pMaxLeg = 60; pHeresyLeg = pMaxLeg;
+        heresyFollowersPct = 40; 
+        combatRound = 1;
+        truppDisadvantage = false;
+        truppParalyserad = false;
+        aktivSubMeny = "attack";
+        
+        selectedSquad.forEach(t => {
+            let beraknatHP = (t.con * 15) + 45;
+            t.maxHP = beraknatHP; t.currentHP = beraknatHP; t.currentDE = t.startDE; t.shieldPool = 0;
+        });
+        
+        byggInitiativKedja();
+        changeScreen('screen-battle');
+        uppdateraUXGranssnitt();
+        
+        logSpelBatalj(`MÖTET HAR BÖRJAT! Strid mot villoläran: ${currentHeresy.name}.`);
 
-    let foerstaEnhet = combatQueue[0];
-    if (foerstaEnhet && !foerstaEnhet.isPlayer) {
-        if (foerstaEnhet.id === "boss") {
-            setTimeout(exekveraBossTur, 1200);
-        } else if (foerstaEnhet.id === "lair") {
-            setTimeout(exekveraLairAction, 1200);
+        let foerstaEnhet = combatQueue[0];
+        if (foerstaEnhet && !foerstaEnhet.isPlayer) {
+            if (foerstaEnhet.id === "boss") {
+                setTimeout(exekveraBossTur, 1200);
+            } else if (foerstaEnhet.id === "lair") {
+                setTimeout(exekveraLairAction, 1200);
+            }
         }
+    } catch (err) {
+        console.error(err);
+        alert("Krasch i startDisputation: " + err.message);
     }
 }
 
@@ -301,48 +307,68 @@ function byggInitiativKedja() {
 }
 
 function exekveraBossTur() {
-    let levandeApologeter = selectedSquad.filter(s => s.currentHP > 0);
-    if (levandeApologeter.length === 0) return;
-    
-    let mltavla = levandeApologeter[Math.floor(Math.random() * levandeApologeter.length)];
-    let skada = Math.floor(Math.random() * 6) + 6; 
-    
-    mltavla.currentHP = Math.max(0, mltavla.currentHP - skada);
-    logSpelBatalj(`[BOSS TUR] ${currentHeresy.boss} attackerar med kätterska argument! ${mltavla.name} tappar ${skada} HP.`);
-    
-    kontrolleraMatchSlut();
-    nastaTur();
+    try {
+        let levandeApologeter = selectedSquad.filter(s => s.currentHP > 0);
+        if (levandeApologeter.length === 0) return;
+        
+        let mltavla = levandeApologeter[Math.floor(Math.random() * levandeApologeter.length)];
+        let skada = Math.floor(Math.random() * 6) + 6; 
+        
+        mltavla.currentHP = Math.max(0, mltavla.currentHP - skada);
+        logSpelBatalj(`[BOSS TUR] ${currentHeresy.boss} attackerar med kätterska argument! ${mltavla.name} tappar ${skada} HP.`);
+        
+        kontrolleraMatchSlut();
+        nastaTur();
+    } catch (err) {
+        logSpelBatalj(`⚠️ FEL I BOSSTUR: ${err.message}`);
+        nastaTur();
+    }
 }
 
 function exekveraLairAction() {
-    logSpelBatalj(`[LAIR PHASE] Massornas dragkamp aktiveras!`);
-    truppDisadvantage = false;
-    truppParalyserad = false;
+    try {
+        logSpelBatalj(`[LAIR PHASE] Massornas dragkamp aktiveras!`);
+        truppDisadvantage = false;
+        truppParalyserad = false;
 
-    if (heresyFollowersPct <= 35) {
-        logSpelBatalj(`⚠️ ${currentHeresy.lairActions.drev}`);
-        truppDisadvantage = true;
-    } else if (heresyFollowersPct > 35 && heresyFollowersPct <= 75) {
-        let xSkada = Math.floor(heresyFollowersPct / 5) + 4; 
-        let dynamicText = currentHeresy.lairActions.han.replace("[X]", xSkada);
-        logSpelBatalj(`💥 ${dynamicText}`);
-        
-        selectedSquad.forEach(t => {
-            if (t.currentHP > 0) {
-                if (t.shieldPool > 0) {
-                    if (t.shieldPool >= xSkada) { t.shieldPool -= xSkada; xSkada = 0; }
-                    else { xSkada -= t.shieldPool; t.shieldPool = 0; }
+        if (heresyFollowersPct <= 35) {
+            logSpelBatalj(`⚠️ ${currentHeresy.lairActions.drev}`);
+            truppDisadvantage = true;
+        } else if (heresyFollowersPct > 35 && heresyFollowersPct <= 75) {
+            let xSkadaBase = Math.floor(heresyFollowersPct / 5) + 4; 
+            
+            // Plocka och formattera texten säkert från JSON
+            let råText = currentHeresy.lairActions.han || "Truppen tar [X] HP i skada.";
+            let dynamicText = råText.replace("[X]", xSkadaBase);
+            logSpelBatalj(`💥 ${dynamicText}`);
+            
+            // KORRIGERING: Isolerad skadeberäkning för varje teolog så loopen aldrig fryser
+            selectedSquad.forEach(t => {
+                if (t.currentHP > 0) {
+                    let nuvarandeSkada = xSkadaBase;
+                    if (t.shieldPool > 0) {
+                        if (t.shieldPool >= nuvarandeSkada) { 
+                            t.shieldPool -= nuvarandeSkada; 
+                            nuvarandeSkada = 0; 
+                        } else { 
+                            nuvarandeSkada -= t.shieldPool; 
+                            t.shieldPool = 0; 
+                        }
+                    }
+                    t.currentHP = Math.max(0, t.currentHP - nuvarandeSkada);
                 }
-                t.currentHP = Math.max(0, t.currentHP - xSkada);
-            }
-        });
-    } else {
-        logSpelBatalj(`🚨 KATASTROF! ${currentHeresy.lairActions.tidsanda}`);
-        truppParalyserad = true;
-    }
+            });
+        } else {
+            logSpelBatalj(`🚨 KATASTROF! ${currentHeresy.lairActions.tidsanda}`);
+            truppParalyserad = true;
+        }
 
-    kontrolleraMatchSlut();
-    nastaTur();
+        kontrolleraMatchSlut();
+        nastaTur();
+    } catch (err) {
+        logSpelBatalj(`⚠️ FEL I LAIR ACTION: ${err.message}`);
+        nastaTur();
+    }
 }
 
 function hanteraSpelarHandling(handlingTyp, teologId) {
