@@ -331,7 +331,7 @@ function executeLairAction() {
 
 // Hjälpfunktion för att trycka ut all text direkt i din nya snygga HTML-debattlogg
 function logSpelBatalj(msg) {
-    const logBox = document.getElementById('disputation-log');
+    const logBox = document.getElementById('hud-battle-log');
     if (logBox) {
         logBox.innerHTML += `<div>${msg}</div>`;
         logBox.scrollTop = logBox.scrollHeight; // Auto-scrollar loggen till botten
