@@ -337,3 +337,11 @@ function logSpelBatalj(msg) {
         logBox.scrollTop = logBox.scrollHeight; // Auto-scrollar loggen till botten
     }
 }
+
+// --- GÖR FUNKTIONERNA TILLGÄNGLIGA FÖR HTML-KNAPPARNA ---
+window.registreraSpelare = registreraSpelare;
+window.filtreraMentalitet = filtreraMentalitet;
+window.klickaTeologSynod = klickaTeologSynod;
+window.initieraD20Strid = initieraD20Strid;
+window.bytSubMeny = bytSubMeny;
+window.klickaSpelarHandling = klickaSpelarHandling;
