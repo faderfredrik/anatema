@@ -29,6 +29,21 @@ let previewedTeolog = null;
 let previewedKostnad = 0;
 
 // ==========================================
+// 0. RETROSÄKRAD LOGGFUNKTION (Flyttad till toppen för att förhindra krascher)
+// ==========================================
+function logSpelBatalj(msg) {
+    const logBox = document.getElementById('hud-battle-log') || document.getElementById('disputation-log');
+    if (logBox) {
+        logBox.innerHTML += `<div class="log-entry">[RUNDA ${combatRound}] ${msg}</div>`;
+        logBox.scrollTop = logBox.scrollHeight;
+    } else {
+        console.log(`Anatema Systemlogg: ${msg}`);
+    }
+}
+// Tvinga fönstret att registrera loggen omedelbart
+window.logSpelBatalj = logSpelBatalj;
+
+// ==========================================
 // 1. INITIALISERING OCH DATALADDNING
 // ==========================================
 async function laddaSpelData() {
@@ -239,7 +254,7 @@ function uppdateraSynodUI() {
 }
 
 // ==========================================
-// 4. STRIDSMOTOR & TRY-CATCH SYSTEM SÄKRING
+// 4. STRIDSMOTOR & TURHANTERING
 // ==========================================
 function initieraD20Strid() {
     try {
@@ -263,7 +278,8 @@ function initieraD20Strid() {
         changeScreen('screen-battle');
         uppdateraUXGranssnitt();
         
-        logSpelBatalj(`MÖTET HAR BÖRJAT! Strid mot villoläran: ${currentHeresy.name}.`);
+        // HÄR SKER DET SÄKRA ANROPET NU:
+        window.logSpelBatalj(`MÖTET HAR BÖRJAT! Strid mot villoläran: ${currentHeresy.name}.`);
 
         let foerstaEnhet = combatQueue[0];
         if (foerstaEnhet && !foerstaEnhet.isPlayer) {
@@ -275,7 +291,7 @@ function initieraD20Strid() {
         }
     } catch (err) {
         console.error(err);
-        alert("Krasch i startDisputation: " + err.message);
+        alert("Fel i disputations-uppstarten: " + err.message);
     }
 }
 
@@ -315,34 +331,31 @@ function exekveraBossTur() {
         let skada = Math.floor(Math.random() * 6) + 6; 
         
         mltavla.currentHP = Math.max(0, mltavla.currentHP - skada);
-        logSpelBatalj(`[BOSS TUR] ${currentHeresy.boss} attackerar med kätterska argument! ${mltavla.name} tappar ${skada} HP.`);
+        window.logSpelBatalj(`[BOSS TUR] ${currentHeresy.boss} attackerar med kätterska argument! ${mltavla.name} tappar ${skada} HP.`);
         
         kontrolleraMatchSlut();
         nastaTur();
     } catch (err) {
-        logSpelBatalj(`⚠️ FEL I BOSSTUR: ${err.message}`);
+        window.logSpelBatalj(`⚠️ FEL I BOSSTUR: ${err.message}`);
         nastaTur();
     }
 }
 
 function exekveraLairAction() {
     try {
-        logSpelBatalj(`[LAIR PHASE] Massornas dragkamp aktiveras!`);
+        window.logSpelBatalj(`[LAIR PHASE] Massornas dragkamp aktiveras!`);
         truppDisadvantage = false;
         truppParalyserad = false;
 
         if (heresyFollowersPct <= 35) {
-            logSpelBatalj(`⚠️ ${currentHeresy.lairActions.drev}`);
+            window.logSpelBatalj(`⚠️ ${currentHeresy.lairActions.drev}`);
             truppDisadvantage = true;
         } else if (heresyFollowersPct > 35 && heresyFollowersPct <= 75) {
             let xSkadaBase = Math.floor(heresyFollowersPct / 5) + 4; 
-            
-            // Plocka och formattera texten säkert från JSON
             let råText = currentHeresy.lairActions.han || "Truppen tar [X] HP i skada.";
             let dynamicText = råText.replace("[X]", xSkadaBase);
-            logSpelBatalj(`💥 ${dynamicText}`);
+            window.logSpelBatalj(`💥 ${dynamicText}`);
             
-            // KORRIGERING: Isolerad skadeberäkning för varje teolog så loopen aldrig fryser
             selectedSquad.forEach(t => {
                 if (t.currentHP > 0) {
                     let nuvarandeSkada = xSkadaBase;
@@ -359,14 +372,14 @@ function exekveraLairAction() {
                 }
             });
         } else {
-            logSpelBatalj(`🚨 KATASTROF! ${currentHeresy.lairActions.tidsanda}`);
+            window.logSpelBatalj(`🚨 KATASTROF! ${currentHeresy.lairActions.tidsanda}`);
             truppParalyserad = true;
         }
 
         kontrolleraMatchSlut();
         nastaTur();
     } catch (err) {
-        logSpelBatalj(`⚠️ FEL I LAIR ACTION: ${err.message}`);
+        window.logSpelBatalj(`⚠️ FEL I LAIR ACTION: ${err.message}`);
         nastaTur();
     }
 }
@@ -376,7 +389,7 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
     if (!t || t.currentHP <= 0) return;
 
     if (truppParalyserad) {
-        logSpelBatalj(`${t.name} är paralyserad av tidsandan och kan inte tala!`);
+        window.logSpelBatalj(`${t.name} är paralyserad av tidsandan och kan inte tala!`);
         nastaTur();
         return;
     }
@@ -387,41 +400,41 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
     
     if (truppDisadvantage) {
         d20 = Math.min(rullning1, rullning2);
-        logSpelBatalj(`[DISADVANTAGE] Rullar två tärningar (${rullning1}, ${rullning2}). Väljer: ${d20}`);
+        window.logSpelBatalj(`[DISADVANTAGE] Rullar två tärningar (${rullning1}, ${rullning2}). Väljer: ${d20}`);
     }
 
     if (handlingTyp === 'attack') {
         if (d20 === 1) {
-            logSpelBatalj(`[NAT 1] ${t.name} snubblar katastrofalt på orden!`);
+            window.logSpelBatalj(`[NAT 1] ${t.name} snubblar katastrofalt på orden!`);
             nastaTur(); return;
         }
         
         let isCrit = (d20 === 20);
-        if (isCrit) logSpelBatalj(`[NAT 20] Perfekt replik! ${t.name} ryter: "${t.citat[0]}"`);
+        if (isCrit) window.logSpelBatalj(`[NAT 20] Perfekt replik! ${t.name} ryter: "${t.citat[0]}"`);
 
         if (t.klass === "Evangelist") {
             let effekt = Math.floor(Math.random() * 6) + 1 + t.cha; 
             if (isCrit) effekt *= 2;
             heresyFollowersPct = Math.max(0, heresyFollowersPct - effekt);
-            logSpelBatalj(`${t.name} omvänder följare! Kätteriets grepp minskar med ${effekt}%.`);
+            window.logSpelBatalj(`${t.name} omvänder följare! Kätteriets grepp minskar med ${effekt}%.`);
         } else if (t.klass === "Lärare") {
             let skada = Math.floor(Math.random() * 8) + 1 + t.int; 
             if (isCrit) skada *= 2;
             pHeresyLar = Math.max(0, pHeresyLar - skada);
-            logSpelBatalj(`${t.name} dekonstruerar villolärans kärna och gör ${skada} Logos-skada.`);
+            window.logSpelBatalj(`${t.name} dekonstruerar villolärans kärna och gör ${skada} Logos-skada.`);
         } else {
             let skada = Math.floor(Math.random() * 6) + 1;
             pHeresyLar = Math.max(0, pHeresyLar - skada);
-            logSpelBatalj(`${t.name} argumenterar stabilt för ${skada} skada.`);
+            window.logSpelBatalj(`${t.name} argumenterar stabilt för ${skada} skada.`);
         }
         
     } else if (handlingTyp === 'skills') {
         if (t.currentDE < t.deKostnad) {
-            logSpelBatalj(`${t.name} saknar DE för att aktivera ${t.deHandlingNamn}!`);
+            window.logSpelBatalj(`${t.name} saknar DE för att aktivera ${t.deHandlingNamn}!`);
             return; 
         }
         t.currentDE -= t.deKostnad;
-        logSpelBatalj(`[SKILL] ${t.name} aktiverar: "${t.deHandlingNamn}"!`);
+        window.logSpelBatalj(`[SKILL] ${t.name} aktiverar: "${t.deHandlingNamn}"!`);
         
         if (t.id === 30) { 
             heresyFollowersPct = Math.max(0, heresyFollowersPct - 25);
@@ -433,14 +446,14 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
         if (t.klass === "Herde") {
             let heal = Math.floor(Math.random() * 6) + 1 + t.wis; 
             selectedSquad.filter(s => s.currentHP > 0).forEach(s => s.currentHP = Math.min(s.maxHP, s.currentHP + heal));
-            logSpelBatalj(`${t.name} utguter helande ord. Truppen återfår ${heal} HP.`);
+            window.logSpelBatalj(`${t.name} utguter helande ord. Truppen återfår ${heal} HP.`);
         } else if (t.klass === "Apostel") {
             let skold = Math.floor(Math.random() * 8) + 1 + t.str; 
             t.shieldPool += skold;
-            logSpelBatalj(`${t.name} reser en Trons sköld som skyddar mot ${skold} skada.`);
+            window.logSpelBatalj(`${t.name} reser en Trons sköld som skyddar mot ${skold} skada.`);
         } else {
             t.currentHP = Math.min(t.maxHP, t.currentHP + 5);
-            logSpelBatalj(`${t.name} samlar sig i bön och helar 5 HP.`);
+            window.logSpelBatalj(`${t.name} samlar sig i bön och helar 5 HP.`);
         }
     }
 
@@ -450,16 +463,16 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
 
 function kontrolleraMatchSlut() {
     if (heresyFollowersPct >= 100) {
-        logSpelBatalj(`[KATASTROF] 100% av folket har förletts.`);
+        window.logSpelBatalj(`[KATASTROF] 100% av folket har förletts.`);
         alert("Kätterskt Game Over!");
         location.reload();
     } else if (pHeresyLar <= 0) {
-        logSpelBatalj(`[SEGER] ${currentHeresy.name} är krossat!`);
+        window.logSpelBatalj(`[SEGER] ${currentHeresy.name} är krossat!`);
         alert("Ortodoxin segrar!");
         location.reload();
     } else if (selectedSquad.every(s => s.currentHP <= 0)) {
-        logSpelBatalj(`[NEDERLAG] Din synod har tystats.`);
-        alert("Synoden föll!");
+        window.logSpelBatalj(`[NEDERLAG] Din synod har tystats.`);
+        alert("Synoden fell!");
         location.reload();
     }
 }
