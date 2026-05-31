@@ -21,15 +21,16 @@ let heresyFollowersPct = 40;
 
 // Status-effekter från Lair Actions
 let truppDisadvantage = false;
-let paralyseradTeologId = null; // KORRIGERING: Spårar nu ID på enskild paralyserad teolog istället för hela truppen
+let paralyseradTeologId = null; 
 let aktivSubMeny = "attack";
 
 // Inspektören (Synodens tvåstegsval)
 let previewedTeolog = null;
 let previewedKostnad = 0;
 
-// Intern spårare för runda-rubriker
+// Spårare för runda-rubriker och aktiva synergier
 let lastLoggedRound = 0;
+let activeSynergies = [];
 
 // ==========================================
 // 0. RETROSÄKRAD OCH FORMATERAD LOGGFUNKTION
@@ -105,7 +106,7 @@ function valjHeresiUtmaning(heresyId) {
 }
 
 // ==========================================
-// 3. SYNODENS GRÄNSSNITT (TVÅSTEGSVAL)
+// 3. SYNODENS GRÄNSSNITT & SYNERGIBERÄKNING
 // ==========================================
 function filtreraMentalitet(mentalitet, btn) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -163,7 +164,7 @@ function bekraftaRekrytering() {
     if (selectedSquad.length >= 4 || (500 - utnyttjat) < previewedKostnad) return;
     if (selectedSquad.some(s => s.id === previewedTeolog.id)) return;
     const statsHP = (previewedTeolog.con * 15) + 45;
-    selectedSquad.push({ ...previewedTeolog, tkKostnad: previewedKostnad, maxHP: statsHP, currentHP: statsHP, currentDE: previewedTeolog.startDE, shieldPool: 0 });
+    selectedSquad.push({ ...previewedTeolog, tkKostnad: previewedKostnad, maxHP: statsHP, currentHP: statsHP, currentDE: previewedTeolog.startDE, shieldPool: 0, internalPaused: false });
     uppdateraSynodUI();
     visaTeologDetaljer(previewedTeolog, previewedKostnad);
     const aktivTab = document.querySelector('.tab-btn.active');
@@ -182,6 +183,29 @@ function taBortFranSquad(id) {
     }
 }
 
+function beraknaMentalitetsSynergier() {
+    const counts = { Monastiker: 0, Filosof: 0, Magistrat: 0, Retoriker: 0 };
+    selectedSquad.forEach(s => { if (counts[s.mentalitet] !== undefined) counts[s.mentalitet]++; });
+    
+    const synDiv = document.getElementById('synod-synergy-display');
+    if (!synDiv) return;
+    synDiv.innerHTML = '';
+    activeSynergies = [];
+
+    if (counts.Monastiker >= 2) activeSynergies.push({ id: "mon", name: "Monastisk gemenskap", desc: "Helig olja ger +3 HP extra på alla försvar (+d4 vid kritiska repliker)." });
+    if (counts.Filosof >= 2) activeSynergies.push({ id: "fil", name: "Collegium Scholasticum", desc: "Ger +3 i fast akademisk bonus på alla Logos-argument mot Lära och Struktur." });
+    if (counts.Magistrat >= 2) activeSynergies.push({ id: "mag", name: "Ex Cathedra", desc: "Ämbetets auktoritet förstärker lagets Trons sköld med +4 i extra skyddskapacitet." });
+    if (counts.Retoriker >= 2) activeSynergies.push({ id: "ret", name: "Karismatisk kampanj", desc: "Gör att Retoriker omvänder heresiens Följare med Advantage (bästa av två tärningar)." });
+
+    if (activeSynergies.length === 0) {
+        synDiv.innerHTML = 'Inga synergier aktiverade.';
+    } else {
+        activeSynergies.forEach(s => {
+            synDiv.innerHTML += `<div style="margin-bottom:4px;"><strong>${s.name}</strong>: ${s.desc}</div>`;
+        });
+    }
+}
+
 function uppdateraSynodUI() {
     let utnyttjat = selectedSquad.reduce((sum, s) => sum + s.tkKostnad, 0);
     const budgetLabel = document.getElementById('TK-budget-label');
@@ -196,12 +220,13 @@ function uppdateraSynodUI() {
             slotsDisplay.innerHTML += `<div class="squad-slot-item empty">[ TOM SQUADSLOT ]</div>`;
         }
     }
+    beraknaMentalitetsSynergier();
     const startBtn = document.getElementById('start-battle-confirm-btn');
     if (startBtn) startBtn.disabled = (selectedSquad.length === 0);
 }
 
 // ==========================================
-// 4. STRIDSMOTOR & AKTIVERING
+// 4. STRIDSMOTOR & REVIDERAD KONFLIKTMOTOR
 // ==========================================
 function initieraD20Strid() {
     if (selectedSquad.length === 0) return;
@@ -216,9 +241,9 @@ function initieraD20Strid() {
     aktivSubMeny = "attack";
     selectedSquad.forEach(t => {
         let beraknatHP = (t.con * 15) + 45;
-        t.maxHP = beraknatHP; t.currentHP = beraknatHP; t.currentDE = t.startDE; t.shieldPool = 0;
+        t.maxHP = beraknatHP; t.currentHP = beraknatHP; t.currentDE = t.startDE; t.shieldPool = 0; t.internalPaused = false;
     });
-    byggInitiativKedja();
+    bygInitiativKedja();
     changeScreen('screen-battle');
     uppdateraUXGranssnitt();
     window.logSpelBatalj(`MÖTET HAR BÖRJAT! Du konfronterar villoläran: ${currentHeresy.name}.`, 'neutral');
@@ -229,7 +254,7 @@ function initieraD20Strid() {
     }
 }
 
-function byggInitiativKedja() {
+function bygInitiativKedja() {
     combatQueue = [];
     let bossRoll = Math.floor(Math.random() * 20) + 1;
     combatQueue.push({ isPlayer: false, id: "boss", name: currentHeresy.boss, init: bossRoll + 2 });
@@ -242,6 +267,33 @@ function byggInitiativKedja() {
     if (lairIndex === -1) combatQueue.push(lairNode);
     else combatQueue.splice(lairIndex, 0, lairNode);
     activeQueueIndex = 0;
+}
+
+// KORRIGERING: Återställt dina exakta, stämningsfulla konfliktformuleringar från V1
+function exekveraInternKonfliktMotor() {
+    selectedSquad.forEach(u => u.internalPaused = false);
+    const cats = { Monastiker: [], Filosof: [], Magistrat: [], Retoriker: [] };
+    
+    selectedSquad.forEach(u => { if (u.currentHP > 0) cats[u.mentalitet].push(u); });
+
+    for (let c in cats) {
+        const list = cats[c];
+        if (list.length >= 2) {
+            if (Math.random() < 0.10) { 
+                let namesArr = list.map(u => u.name);
+                let namesText = namesArr.length === 2 ? namesArr.join(" och ") : namesArr.slice(0, -1).join(", ") + " och " + namesArr[namesArr.length - 1];
+
+                let msg = "";
+                if (c === "Monastiker") msg = `🛑 <em>"${namesText} faller i hänryckning inför hostian! De blir djupt frånvarande och tvingas stå över denna runda."</em>`;
+                else if (c === "Filosof") msg = `🛑 <em>"${namesText} fastnar i en evig loop av syllogismer och semantiska definitioner av substansbegreppet! De förlorar sig i akademiskt brus och tvingas stå över denna runda."</em>`;
+                else if (c === "Magistrat") msg = `🛑 <em>"${namesText} blir våldsamt osams om tolkningen av den kanoniska rätten och vägrar samarbeta! Truppens administration bryter samman och de tvingas stå över denna runda."</em>`;
+                else if (c === "Retoriker") msg = `🛑 <em>"${namesText} börjar bråka om apostolisk succession! Retoriken spårar ur i prestige och de tvingas stå över denna runda."</em>`;
+
+                window.logSpelBatalj(msg, 'heresi');
+                list.forEach(u => u.internalPaused = true);
+            }
+        }
+    }
 }
 
 function exekveraBossTur() {
@@ -316,7 +368,6 @@ function exekveraLairAction() {
             }
         });
     } else {
-        // KORRIGERING: Slumpa fram EN enskild stackars teolog som förlamas istället för hela gruppen
         window.logSpelBatalj(`🚨 ${currentHeresy.lairActions.tidsanda}`, 'heresi');
         let levande = selectedSquad.filter(s => s.currentHP > 0);
         if (levande.length > 0) {
@@ -329,9 +380,6 @@ function exekveraLairAction() {
     nastaTur();
 }
 
-// ==========================================
-// 5. STRIDSHANDLINGAR & GRUPPERAT LOGGFLÖDE
-// ==========================================
 function hanteraSpelarHandling(handlingTyp, teologId) {
     let t = selectedSquad.find(s => s.id === teologId);
     if (!t || t.currentHP <= 0) return;
@@ -377,13 +425,16 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
 
     let harIkonoklastStraff = (currentHeresy.id === "ikonoklasmen" && pHeresyStr > 0 && (t.klass === "Lärare" || t.klass === "Herde"));
 
+    let scholasticBonus = activeSynergies.some(s => s.id === "fil") ? 3 : 0;
+    let cathedraBonus = activeSynergies.some(s => s.id === "mag") ? 4 : 0;
+
     if (handlingTyp === 'attack_laran') {
         if (currentHeresy.id === "pelagianism" && pHeresyLeg > 0) { window.logSpelBatalj(` > [IMMUNITET] Pelagius heliga anseende skyddar deras Lära! Du måste sänka deras LEGITIMITETEN först.`, 'heresi'); nastaTur(); return; }
         
         let basTarning = (t.klass === "Lärare") ? (Math.floor(Math.random() * 8) + 1) : (Math.floor(Math.random() * 4) + 1);
         let modifierare = t.int - (harIkonoklastStraff ? 2 : 0);
-        let skada = basTarning + modifierare;
-        if (isCrit) skada = ((t.klass === "Lärare") ? 8 : 4) + basTarning + modifierare + 5; 
+        let skada = basTarning + modifierare + scholasticBonus;
+        if (isCrit) skada = ((t.klass === "Lärare") ? 8 : 4) + basTarning + modifierare + scholasticBonus + 5; 
         if (skada < 1) skada = 1;
 
         if (currentHeresy.id === "trilingual" && pHeresyLeg > 30) {
@@ -397,8 +448,8 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
         
     } else if (handlingTyp === 'attack_struktur') {
         let basTarning = (t.klass === "Apostel") ? (Math.floor(Math.random() * 8) + 1) : (Math.floor(Math.random() * 4) + 1);
-        let skada = basTarning + t.str;
-        if (isCrit) skada = ((t.klass === "Apostel") ? 8 : 4) + basTarning + t.str + 5;
+        let skada = basTarning + t.str + scholasticBonus;
+        if (isCrit) skada = ((t.klass === "Apostel") ? 8 : 4) + basTarning + t.str + scholasticBonus + 5;
         if (skada < 1) skada = 1;
 
         pHeresyStr = Math.max(0, pHeresyStr - skada);
@@ -415,7 +466,17 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
         window.logSpelBatalj(` > Det kätterska anseendet krackelerar och sänker legitmiteten med ${skada} punkter.`, 'ortodox');
         
     } else if (handlingTyp === 'attack_foljare') {
-        let basTarning = (t.klass === "Evangelist") ? (Math.floor(Math.random() * 6) + 1) : (Math.floor(Math.random() * 4) + 1);
+        let r1 = Math.floor(Math.random() * 6) + 1;
+        let r2 = Math.floor(Math.random() * 6) + 1;
+        let basTarning = r1;
+        
+        if (activeSynergies.some(s => s.id === "ret") && t.klass === "Evangelist") {
+            basTarning = Math.max(r1, r2);
+            window.logSpelBatalj(` > Karismatisk kampanj tillför Advantage! Slår två tärningar (${r1} och ${r2}). Väljer: Slår ${basTarning}.`, 'ortodox');
+        } else {
+            basTarning = (t.klass === "Evangelist") ? r1 : (Math.floor(Math.random() * 4) + 1);
+        }
+
         let effekt = basTarning + t.cha;
         if (currentHeresy.id === "gnosticism") effekt = Math.max(1, effekt - 4);
         if (isCrit) effekt = ((t.klass === "Evangelist") ? 6 : 4) + basTarning + t.cha + 5;
@@ -454,9 +515,14 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
         let sårbar = levande.reduce((min, curr) => curr.currentHP < min.currentHP ? curr : min, levande[0]);
         
         let basTarning = Math.floor(Math.random() * 6) + 1; 
-        let bonus = t.wis + (t.klass === "Herde" ? 5 : 0); 
+        let monastiskBonus = activeSynergies.some(s => s.id === "mon") ? 3 : 0;
+        let bonus = t.wis + (t.klass === "Herde" ? 5 : 0) + monastiskBonus;
         let heal = basTarning + bonus;
-        if (isCrit) heal = 6 + basTarning + bonus + 5; 
+        if (isCrit) {
+            let extraD4 = activeSynergies.some(s => s.id === "mon") ? (Math.floor(Math.random() * 4) + 1) : 0;
+            heal = 6 + basTarning + bonus + 5 + extraD4;
+            if (extraD4 > 0) window.logSpelBatalj(` > Monastisk gemenskap tillför +${extraD4} extra helande kraft på fullträffen!`, 'ortodox');
+        }
         if (heal < 1) heal = 1;
 
         sårbar.currentHP = Math.min(sårbar.maxHP, sårbar.currentHP + heal);
@@ -468,7 +534,7 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
         let sårbar = levande.reduce((min, curr) => curr.currentHP < min.currentHP ? curr : min, levande[0]);
 
         let basTarning = Math.floor(Math.random() * 6) + 1; 
-        let bonus = t.str + (t.klass === "Apostel" ? 5 : 0); 
+        let bonus = t.str + (t.klass === "Apostel" ? 5 : 0) + cathedraBonus;
         let skold = basTarning + bonus;
         if (isCrit) skold = 6 + basTarning + bonus + 5; 
 
@@ -491,10 +557,11 @@ function nastaTur() {
     activeQueueIndex = (activeQueueIndex + 1) % combatQueue.length;
     if (activeQueueIndex === 0) {
         combatRound++;
+        exekveraInternKonfliktMotor(); 
         if (currentHeresy.id === "valdensianism" || currentHeresy.id === "arianism") {
             let tillvaxt = Math.floor(combatRound * 1.5) + 3;
             heresyFollowersPct = Math.min(100, heresyFollowersPct + tillvaxt);
-            window.logSpelBatalj(`Kätteriets inflytande på gatorna ökar naturligt med ${tillvaxt}%.`, 'heresi');
+            window.logSpelBatalj("Kätteriets inflytande på gatorna ökar naturligt med " + tillvaxt + "%.", 'heresi');
         }
     }
     
@@ -505,10 +572,16 @@ function nastaTur() {
             nastaTur();
             return;
         }
-        // KORRIGERING: Hoppa över teologen automatiskt här om hen dömts till enskild runda-paralys
         if (teologCheck.id === paralyseradTeologId) {
             window.logSpelBatalj(`${teologCheck.name} är paralyserad av tidsandan och tvingas stå över sin talartid!`, 'heresi');
-            paralyseradTeologId = null; // Rensa omedelbart efter hoppet så effekten släpper till nästa runda
+            paralyseradTeologId = null; 
+            nastaTur();
+            return;
+        }
+        // KORRIGERING: Lagt till din begärda loggförklaring efter originalcitatet vid utlöst konflikt
+        if (teologCheck.internalPaused) {
+            window.logSpelBatalj(`${teologCheck.name} tvingas stå över sin talartid på grund av den interna teologiska disputationen.`, 'neutral');
+            teologCheck.internalPaused = false; 
             nastaTur();
             return;
         }
