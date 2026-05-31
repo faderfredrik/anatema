@@ -37,12 +37,10 @@ let lastLoggedRound = 0;
 function logSpelBatalj(msg, typ = 'neutral') {
     const logBox = document.getElementById('hud-battle-log') || document.getElementById('disputation-log');
     if (logBox) {
-        // KORRIGERING: Skapar en snygg, centrerad runda-avdelare när rundan skiftar
         if (combatRound !== lastLoggedRound) {
             logBox.innerHTML += `<div class="log-entry neutral" style="text-align: center; margin: 15px 0; font-weight: bold; border-bottom: 1px dashed #555; padding-bottom: 6px; color: #ffff55;">----- RUNDA ${combatRound} -----</div>`;
             lastLoggedRound = combatRound;
         }
-        // Skriver ut meddelandet utan den fula [RUNDA X]-stämpeln
         logBox.innerHTML += `<div class="log-entry ${typ}">${msg}</div>`;
         logBox.scrollTop = logBox.scrollHeight;
     }
@@ -203,7 +201,7 @@ function uppdateraSynodUI() {
 }
 
 // ==========================================
-// 4. STRIDSMOTOR & STRIDSAKTIVERING
+// 4. STRIDSMOTOR & AKTIVERING
 // ==========================================
 function initieraD20Strid() {
     if (selectedSquad.length === 0) return;
@@ -212,7 +210,7 @@ function initieraD20Strid() {
     pMaxLeg = 60; pHeresyLeg = pMaxLeg;
     heresyFollowersPct = 40; 
     combatRound = 1;
-    lastLoggedRound = 0; // Nollställ rubrikräknaren inför ny match
+    lastLoggedRound = 0; 
     truppDisadvantage = false;
     truppParalyserad = false;
     aktivSubMeny = "attack";
@@ -318,7 +316,7 @@ function exekveraLairAction() {
 }
 
 // ==========================================
-// 5. STRIDSHANDLINGAR & GRUPPERAT LOGGFLÖDE
+// 5. STRIDSHANDLINGAR (MED MÅLSÖKANDE DEFENDS)
 // ==========================================
 function hanteraSpelarHandling(handlingTyp, teologId) {
     let t = selectedSquad.find(s => s.id === teologId);
@@ -326,23 +324,24 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
 
     if (truppParalyserad) { window.logSpelBatalj(`${t.name} är paralyserad av tidsandan och saknar röst!`, 'heresi'); nastaTur(); return; }
 
-    // Steg 1: Skriv ut den aktiva handlingen (Snyggt grupperat och personifierat)
+    // Steg 1: Logga vad som initieras
     if (handlingTyp === 'skills') {
         if (t.currentDE < t.deKostnad) { window.logSpelBatalj(`${t.name} saknar tillräcklig Dogmatisk Energi för att aktivera ${t.deHandlingNamn}!`, 'neutral'); return; }
         t.currentDE -= t.deKostnad;
         window.logSpelBatalj(`${t.name} använder: "${t.deHandlingNamn}"!`, 'ortodox');
     } else {
         let handlingsBeskrivning = "reser sig för att tala.";
-        if (handlingTyp === 'attack_laran') handlingsBeskrivning = "angriper kätteriets lärosatser.";
+        if (handlingTyp === 'attack_laran') handlingsBeskrivning = "angriper kätteriet.";
         else if (handlingTyp === 'attack_struktur') handlingsBeskrivning = "utmanar heresiens nätverk.";
         else if (handlingTyp === 'attack_legitimer') handlingsBeskrivning = "blottar heresiens moraliska brister.";
         else if (handlingTyp === 'attack_foljare') handlingsBeskrivning = "vänder sig till folkmassan.";
-        else if (handlingTyp === 'defend') handlingsBeskrivning = (t.klass === "Herde") ? "förbereder helig smörjelse." : (t.klass === "Apostel") ? "reser ett andligt värn." : "samlar sina tankar.";
+        // KORRIGERING: Tydligare, flytande försvarsannonseringar
+        else if (handlingTyp === 'defend_olja') handlingsBeskrivning = "bereder en helig smörjelse.";
+        else if (handlingTyp === 'defend_skold') handlingsBeskrivning = "reser ett andligt skyddsvärn.";
         
         window.logSpelBatalj(`${t.name} ${handlingsBeskrivning}`, 'neutral');
     }
 
-    // Tärningsslag under huven
     let rullning1 = Math.floor(Math.random() * 20) + 1;
     let rullning2 = Math.floor(Math.random() * 20) + 1;
     let d20 = rullning1;
@@ -352,7 +351,6 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
         window.logSpelBatalj(` > Retorisk nackdel tvingar fram två rullningar (${rullning1} och ${rullning2}). Väljer det lägsta: Slår ${d20}.`, 'neutral');
     }
 
-    // Steg 2: Hantera utfall och rulla skada (Rättat namn-buggen vid Nat 1)
     if (d20 === 1) { 
         if (handlingTyp === 'skills') {
             window.logSpelBatalj(` > Slår 1! En katastrofal miss under försöket att aktivera förmågan. ${t.name} snubblar helt på orden och den dogmatiska energin går förlorad i förvirringen.`, 'heresi');
@@ -369,6 +367,7 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
 
     let harIkonoklastStraff = (currentHeresy.id === "ikonoklasmen" && pHeresyStr > 0 && (t.klass === "Lärare" || t.klass === "Herde"));
 
+    // Attackvinklar
     if (handlingTyp === 'attack_laran') {
         if (currentHeresy.id === "pelagianism" && pHeresyLeg > 0) { window.logSpelBatalj(` > [IMMUNITET] Pelagius heliga anseende skyddar deras Lära! Du måste sänka deras LEGITIMITETEN först.`, 'heresi'); nastaTur(); return; }
         
@@ -441,23 +440,36 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
             window.logSpelBatalj(` ⚡ Trons fasta grund raserar heresiens nätverk (-${strDmg} Struktur) och reser en Trons sköld framför ${sårbar.name} (+20 Sköld).`, 'ortodox');
         }
 
-    } else if (handlingTyp === 'defend') {
+    // KORRIGERING: Två fristående och fullt skalbara bas-actions för Defend (Olja och Sköld)
+    } else if (handlingTyp === 'defend_olja') {
+        let levande = selectedSquad.filter(s => s.currentHP > 0);
+        let sårbar = levande.reduce((min, curr) => curr.currentHP < min.currentHP ? curr : min, levande[0]);
+        
+        let basTarning = Math.floor(Math.random() * 6) + 1; // d6 bas
+        let bonus = t.wis + (t.klass === "Herde" ? 5 : 0); // WIS-mod + Herde klassbonus
+        let heal = basTarning + bonus;
+        if (isCrit) heal = 6 + basTarning + bonus + 5; // Nat 20 maximerar tärningen
+        if (heal < 1) heal = 1;
+
+        sårbar.currentHP = Math.min(sårbar.maxHP, sårbar.currentHP + heal);
+        let mottagare = (sårbar.id === t.id) ? "sig själv" : sårbar.name;
+        window.logSpelBatalj(` > Smörjer ${mottagare} med Helig olja och återupprättar ${heal} HP.`, 'ortodox');
+
+    } else if (handlingTyp === 'defend_skold') {
         let levande = selectedSquad.filter(s => s.currentHP > 0);
         let sårbar = levande.reduce((min, curr) => curr.currentHP < min.currentHP ? curr : min, levande[0]);
 
-        if (t.klass === "Herde") {
-            let heal = Math.floor(Math.random() * 6) + 1 + t.wis + 5;
-            sårbar.currentHP = Math.min(sårbar.maxHP, sårbar.currentHP + heal);
-            window.logSpelBatalj(` > Smörjer ${sårbar.name === t.name ? 'sig själv' : sårbar.name} med Helig olja och återupprättar ${heal} HP.`, 'ortodox');
-        } else if (t.klass === "Apostel") {
-            let skold = Math.floor(Math.random() * 8) + 1 + t.str + 5;
-            sårbar.shieldPool += skold;
-            window.logSpelBatalj(` > Reser en Trons sköld framför ${sårbar.name} som absorberar upp till ${skold} inkommande skada.`, 'ortodox');
-        } else {
-            t.currentHP = Math.min(t.maxHP, t.currentHP + 5);
-            window.logSpelBatalj(` > Samlar sig i tyst bön och återfår 5 HP.`, 'ortodox');
-        }
+        let basTarning = Math.floor(Math.random() * 6) + 1; // d6 bas
+        let bonus = t.str + (t.klass === "Apostel" ? 5 : 0); // STR-mod + Apostel klassbonus
+        let skold = basTarning + bonus;
+        if (isCrit) skold = 6 + basTarning + bonus + 5; // Nat 20 maximerar tärningen
+        if (skold < 1) skold = 1;
+
+        sårbar.shieldPool += skold;
+        let mottagare = (sårbar.id === t.id) ? "sig själv" : sårbar.name;
+        window.logSpelBatalj(` > Reser Trons sköld framför ${mottagare} som absorberar upp till ${skold} inkommande skada.`, 'ortodox');
     }
+    
     kontrolleraMatchSlut();
     nastaTur();
 }
@@ -567,15 +579,16 @@ function uppdateraUXGranssnitt() {
                         <button class="action-node-btn" onclick="hanteraSpelarHandling('attack_struktur', ${teolog.id})"><span>🔨 Sänk Struktur</span><span style="color:#ffff55;">STR: +${teolog.str}</span></button>
                         <button class="action-node-btn" onclick="hanteraSpelarHandling('attack_legitimer', ${teolog.id})"><span>⚖️ Sänk Legitimitet</span><span style="color:#ffff55;">WIS: +${teolog.wis}</span></button>
                         <button class="action-node-btn" onclick="hanteraSpelarHandling('attack_foljare', ${teolog.id})"><span>📢 Omvänd Följare</span><span style="color:#ffff55;">CHA: +${teolog.cha}</span></button>`;
+                } else if (aktivSubMeny === 'defend') {
+                    // KORRIGERING: Defend-menyn renderas nu som ett 2x2 JRPG-rutnät för Olja och Sköld
+                    subActionsEl.style.display = 'grid'; subActionsEl.style.gridTemplateColumns = '1fr 1fr'; subActionsEl.style.gap = '6px';
+                    subActionsEl.innerHTML = `
+                        <button class="action-node-btn" onclick="hanteraSpelarHandling('defend_olja', ${teolog.id})"><span>❤️ Helig olja</span><span style="color:#55ffff;">WIS: +${teolog.wis}${teolog.klass === 'Herde' ? ' +5' : ''}</span></button>
+                        <button class="action-node-btn" onclick="hanteraSpelarHandling('defend_skold', ${teolog.id})"><span>🛡️ Trons sköld</span><span style="color:#55ffff;">STR: +${teolog.str}${teolog.klass === 'Apostel' ? ' +5' : ''}</span></button>`;
                 } else {
                     subActionsEl.style.display = 'grid'; subActionsEl.style.gridTemplateColumns = '1fr';
                     if (aktivSubMeny === 'skills') {
                         subActionsEl.innerHTML = `<button class="action-node-btn" onclick="hanteraSpelarHandling('skills', ${teolog.id})"><span>⚡ SIGNATUR: ${teolog.deHandlingNamn}</span><span style="color:#00ccff;">-${teolog.deKostnad} DE</span></button>`;
-                    } else if (aktivSubMeny === 'defend') {
-                        let label = "Samla tankarna (Hela 5 HP)";
-                        if (teolog.klass === "Herde") label = "Helande ord (Helig olja)";
-                        else if (teolog.klass === "Apostel") label = "Trons sköld (Res försvar)";
-                        subActionsEl.innerHTML = `<button class="action-node-btn" onclick="hanteraSpelarHandling('defend', ${teolog.id})"><span>🛡️ ${label}</span><span style="color:#55ffff;">Mekanik: ${teolog.klass}</span></button>`;
                     } else if (aktivSubMeny === 'items') {
                         subActionsEl.innerHTML = `<div style="font-size:11px; color:#555; padding:8px; font-style:italic;">[ Saknar föremål i kistan just nu ]</div>`;
                     }
