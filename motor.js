@@ -21,7 +21,7 @@ let heresyFollowersPct = 40;
 
 // Status-effekter från Lair Actions
 let truppDisadvantage = false;
-let truppParalyserad = false; 
+let paralyseradTeologId = null; // KORRIGERING: Spårar nu ID på enskild paralyserad teolog istället för hela truppen
 let aktivSubMeny = "attack";
 
 // Inspektören (Synodens tvåstegsval)
@@ -212,7 +212,7 @@ function initieraD20Strid() {
     combatRound = 1;
     lastLoggedRound = 0; 
     truppDisadvantage = false;
-    truppParalyserad = false;
+    paralyseradTeologId = null;
     aktivSubMeny = "attack";
     selectedSquad.forEach(t => {
         let beraknatHP = (t.con * 15) + 45;
@@ -273,9 +273,9 @@ function exekveraBossTur() {
 
 function exekveraLairAction() {
     let dragkampText = "";
-    if (heresyFollowersPct <= 20) {
-        dragkampText = `Människor börjar tvivla på ${currentHeresy.boss} legitimitet. Heresins effekt är dämpad.`;
-    } else if (heresyFollowersPct <= 40) {
+    if (heresyFollowersPct <= 25) {
+        dragkampText = `Människor vänder kätteriet ryggen. ${currentHeresy.boss} har inte längre tillräckligt med inflytande för att störa er dialog. Truppen andas ut.`;
+    } else if (heresyFollowersPct <= 45) {
         dragkampText = `Debatten väger svagt, men ortodoxins sanning håller massorna stabila.`;
     } else if (heresyFollowersPct <= 60) {
         dragkampText = `Heresins villolärosor sprids bland de osäkra i folkmassan.`;
@@ -284,16 +284,24 @@ function exekveraLairAction() {
     } else {
         dragkampText = `Ett heretiskt mörker sveper över massorna! Det andliga klimatet är kritiskt.`;
     }
+    
+    if (heresyFollowersPct <= 25) {
+        window.logSpelBatalj(dragkampText, 'ortodox');
+        truppDisadvantage = false;
+        paralyseradTeologId = null;
+        kontrolleraMatchSlut();
+        nastaTur();
+        return;
+    }
+
     window.logSpelBatalj(dragkampText, 'heresi');
-
     truppDisadvantage = false;
-    truppParalyserad = false;
 
-    if (heresyFollowersPct <= 35) {
+    if (heresyFollowersPct > 25 && heresyFollowersPct <= 55) {
         window.logSpelBatalj(`⚠️ ${currentHeresy.lairActions.drev}`, 'heresi');
         window.logSpelBatalj(` Truppen drabbas av Disadvantage (Retorisk nackdel: tvingas välja det sämsta av två tärningsslag).`, 'heresi');
         truppDisadvantage = true;
-    } else if (heresyFollowersPct > 35 && heresyFollowersPct <= 75) {
+    } else if (heresyFollowersPct > 55 && heresyFollowersPct <= 75) {
         let xSkadaBase = Math.floor(heresyFollowersPct / 5) + 4; 
         let dynamicText = (currentHeresy.lairActions.han || "Truppen tar [X] HP.").replace("[X]", xSkadaBase);
         window.logSpelBatalj(`💥 ${dynamicText}`, 'heresi');
@@ -308,23 +316,26 @@ function exekveraLairAction() {
             }
         });
     } else {
+        // KORRIGERING: Slumpa fram EN enskild stackars teolog som förlamas istället för hela gruppen
         window.logSpelBatalj(`🚨 ${currentHeresy.lairActions.tidsanda}`, 'heresi');
-        truppParalyserad = true;
+        let levande = selectedSquad.filter(s => s.currentHP > 0);
+        if (levande.length > 0) {
+            let mltavla = levande[Math.floor(Math.random() * levande.length)];
+            paralyseradTeologId = mltavla.id;
+            window.logSpelBatalj(` > Tidsandan lamslår ${mltavla.name} specifikt, som tvingas stå över sin nästa tur!`, 'heresi');
+        }
     }
     kontrolleraMatchSlut();
     nastaTur();
 }
 
 // ==========================================
-// 5. STRIDSHANDLINGAR (MED MÅLSÖKANDE DEFENDS)
+// 5. STRIDSHANDLINGAR & GRUPPERAT LOGGFLÖDE
 // ==========================================
 function hanteraSpelarHandling(handlingTyp, teologId) {
     let t = selectedSquad.find(s => s.id === teologId);
     if (!t || t.currentHP <= 0) return;
 
-    if (truppParalyserad) { window.logSpelBatalj(`${t.name} är paralyserad av tidsandan och saknar röst!`, 'heresi'); nastaTur(); return; }
-
-    // Steg 1: Logga vad som initieras
     if (handlingTyp === 'skills') {
         if (t.currentDE < t.deKostnad) { window.logSpelBatalj(`${t.name} saknar tillräcklig Dogmatisk Energi för att aktivera ${t.deHandlingNamn}!`, 'neutral'); return; }
         t.currentDE -= t.deKostnad;
@@ -335,7 +346,6 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
         else if (handlingTyp === 'attack_struktur') handlingsBeskrivning = "utmanar heresiens nätverk.";
         else if (handlingTyp === 'attack_legitimer') handlingsBeskrivning = "blottar heresiens moraliska brister.";
         else if (handlingTyp === 'attack_foljare') handlingsBeskrivning = "vänder sig till folkmassan.";
-        // KORRIGERING: Tydligare, flytande försvarsannonseringar
         else if (handlingTyp === 'defend_olja') handlingsBeskrivning = "bereder en helig smörjelse.";
         else if (handlingTyp === 'defend_skold') handlingsBeskrivning = "reser ett andligt skyddsvärn.";
         
@@ -367,7 +377,6 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
 
     let harIkonoklastStraff = (currentHeresy.id === "ikonoklasmen" && pHeresyStr > 0 && (t.klass === "Lärare" || t.klass === "Herde"));
 
-    // Attackvinklar
     if (handlingTyp === 'attack_laran') {
         if (currentHeresy.id === "pelagianism" && pHeresyLeg > 0) { window.logSpelBatalj(` > [IMMUNITET] Pelagius heliga anseende skyddar deras Lära! Du måste sänka deras LEGITIMITETEN först.`, 'heresi'); nastaTur(); return; }
         
@@ -440,15 +449,14 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
             window.logSpelBatalj(` ⚡ Trons fasta grund raserar heresiens nätverk (-${strDmg} Struktur) och reser en Trons sköld framför ${sårbar.name} (+20 Sköld).`, 'ortodox');
         }
 
-    // KORRIGERING: Två fristående och fullt skalbara bas-actions för Defend (Olja och Sköld)
     } else if (handlingTyp === 'defend_olja') {
         let levande = selectedSquad.filter(s => s.currentHP > 0);
         let sårbar = levande.reduce((min, curr) => curr.currentHP < min.currentHP ? curr : min, levande[0]);
         
-        let basTarning = Math.floor(Math.random() * 6) + 1; // d6 bas
-        let bonus = t.wis + (t.klass === "Herde" ? 5 : 0); // WIS-mod + Herde klassbonus
+        let basTarning = Math.floor(Math.random() * 6) + 1; 
+        let bonus = t.wis + (t.klass === "Herde" ? 5 : 0); 
         let heal = basTarning + bonus;
-        if (isCrit) heal = 6 + basTarning + bonus + 5; // Nat 20 maximerar tärningen
+        if (isCrit) heal = 6 + basTarning + bonus + 5; 
         if (heal < 1) heal = 1;
 
         sårbar.currentHP = Math.min(sårbar.maxHP, sårbar.currentHP + heal);
@@ -459,11 +467,10 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
         let levande = selectedSquad.filter(s => s.currentHP > 0);
         let sårbar = levande.reduce((min, curr) => curr.currentHP < min.currentHP ? curr : min, levande[0]);
 
-        let basTarning = Math.floor(Math.random() * 6) + 1; // d6 bas
-        let bonus = t.str + (t.klass === "Apostel" ? 5 : 0); // STR-mod + Apostel klassbonus
+        let basTarning = Math.floor(Math.random() * 6) + 1; 
+        let bonus = t.str + (t.klass === "Apostel" ? 5 : 0); 
         let skold = basTarning + bonus;
-        if (isCrit) skold = 6 + basTarning + bonus + 5; // Nat 20 maximerar tärningen
-        if (skold < 1) skold = 1;
+        if (isCrit) skold = 6 + basTarning + bonus + 5; 
 
         sårbar.shieldPool += skold;
         let mottagare = (sårbar.id === t.id) ? "sig själv" : sårbar.name;
@@ -484,7 +491,6 @@ function nastaTur() {
     activeQueueIndex = (activeQueueIndex + 1) % combatQueue.length;
     if (activeQueueIndex === 0) {
         combatRound++;
-        truppParalyserad = false; 
         if (currentHeresy.id === "valdensianism" || currentHeresy.id === "arianism") {
             let tillvaxt = Math.floor(combatRound * 1.5) + 3;
             heresyFollowersPct = Math.min(100, heresyFollowersPct + tillvaxt);
@@ -496,6 +502,13 @@ function nastaTur() {
     if (nuvarandeEnhet.isPlayer) {
         let teologCheck = selectedSquad.find(s => s.id === nuvarandeEnhet.id);
         if (!teologCheck || teologCheck.currentHP <= 0) {
+            nastaTur();
+            return;
+        }
+        // KORRIGERING: Hoppa över teologen automatiskt här om hen dömts till enskild runda-paralys
+        if (teologCheck.id === paralyseradTeologId) {
+            window.logSpelBatalj(`${teologCheck.name} är paralyserad av tidsandan och tvingas stå över sin talartid!`, 'heresi');
+            paralyseradTeologId = null; // Rensa omedelbart efter hoppet så effekten släpper till nästa runda
             nastaTur();
             return;
         }
@@ -580,7 +593,6 @@ function uppdateraUXGranssnitt() {
                         <button class="action-node-btn" onclick="hanteraSpelarHandling('attack_legitimer', ${teolog.id})"><span>⚖️ Sänk Legitimitet</span><span style="color:#ffff55;">WIS: +${teolog.wis}</span></button>
                         <button class="action-node-btn" onclick="hanteraSpelarHandling('attack_foljare', ${teolog.id})"><span>📢 Omvänd Följare</span><span style="color:#ffff55;">CHA: +${teolog.cha}</span></button>`;
                 } else if (aktivSubMeny === 'defend') {
-                    // KORRIGERING: Defend-menyn renderas nu som ett 2x2 JRPG-rutnät för Olja och Sköld
                     subActionsEl.style.display = 'grid'; subActionsEl.style.gridTemplateColumns = '1fr 1fr'; subActionsEl.style.gap = '6px';
                     subActionsEl.innerHTML = `
                         <button class="action-node-btn" onclick="hanteraSpelarHandling('defend_olja', ${teolog.id})"><span>❤️ Helig olja</span><span style="color:#55ffff;">WIS: +${teolog.wis}${teolog.klass === 'Herde' ? ' +5' : ''}</span></button>
