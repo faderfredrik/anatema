@@ -194,7 +194,7 @@ function uppdateraSynodUI() {
 }
 
 // ==========================================
-// 4. STRIDSMOTOR & AOE-BALANSERING
+// 4. STRIDSMOTOR & TURORDNING
 // ==========================================
 function initieraD20Strid() {
     if (selectedSquad.length === 0) return;
@@ -240,14 +240,12 @@ function exekveraBossTur() {
     let levande = selectedSquad.filter(s => s.currentHP > 0);
     if (levande.length === 0) return;
     
-    // KORRIGERING: Heresins ledare slår nu mot HELA truppen (Mass-AOE) för ökad strategisk utmaning
     window.logSpelBatalj(`${currentHeresy.boss} dundrar ut skarpa kätterska argument mot hela synoden!`);
     
     levande.forEach(mltavla => {
-        let skada = Math.floor(Math.random() * 4) + 4; // Balanserad bas-skada (4-7 HP) då den träffar alla
+        let skada = Math.floor(Math.random() * 4) + 4; 
         if (currentHeresy.id === "nyateism") skada += Math.floor(heresyFollowersPct / 15);
         
-        // Trons sköld absorbering
         if (mltavla.shieldPool > 0) {
             if (mltavla.shieldPool >= skada) {
                 mltavla.shieldPool -= skada;
@@ -299,9 +297,6 @@ function exekveraLairAction() {
     nastaTur();
 }
 
-// ==========================================
-// 5. STRIDSHANDLINGAR (DYNAMISKA SKILLS)
-// ==========================================
 function hanteraSpelarHandling(handlingTyp, teologId) {
     let t = selectedSquad.find(s => s.id === teologId);
     if (!t || t.currentHP <= 0) return;
@@ -341,11 +336,10 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
         t.currentDE -= t.deKostnad;
         window.logSpelBatalj(`[SKILL] ${t.name} aktiverar signaturförmågan: "${t.deHandlingNamn}"!`);
         
-        // KORRIGERING: Helt unika och dynamiska effekter per Klass och tillhörande stats!
         if (t.klass === "Lärare") {
             let dmg = 25 + (t.int * 3);
             pHeresyLar = Math.max(0, pHeresyLar - dmg);
-            window.logSpelBatalj(` ⚡ En intellektuell dekonstruktion krossar heresiens kärna: Gillar -${dmg} skada på LÄRAN.`);
+            window.logSpelBatalj(` ⚡ En intellektuell dekonstruktion krossar heresiens kärna: Gör -${dmg} skada på LÄRAN.`);
         } else if (t.klass === "Evangelist") {
             let pct = 20 + (t.cha * 3);
             heresyFollowersPct = Math.max(0, heresyFollowersPct - pct);
@@ -397,8 +391,18 @@ function nastaTur() {
             window.logSpelBatalj(`Kätteriets inflytande på gatorna ökar naturligt med ${tillvaxt}%.`);
         }
     }
-    uppdateraUXGranssnitt();
+    
+    // KORRIGERING: Om det är en spelares tur, men teologen är tystad (HP <= 0), hoppa automatiskt över kön direkt!
     let nuvarandeEnhet = combatQueue[activeQueueIndex];
+    if (nuvarandeEnhet.isPlayer) {
+        let teologCheck = selectedSquad.find(s => s.id === nuvarandeEnhet.id);
+        if (!teologCheck || teologCheck.currentHP <= 0) {
+            nastaTur();
+            return;
+        }
+    }
+
+    uppdateraUXGranssnitt();
     if (nuvarandeEnhet.id === "boss") setTimeout(exekveraBossTur, 1200);
     else if (nuvarandeEnhet.id === "lair") setTimeout(exekveraLairAction, 1200);
 }
@@ -438,8 +442,6 @@ function uppdateraUXGranssnitt() {
         selectedSquad.forEach(t => {
             let statusPrefix = t.currentHP <= 0 ? "[TYSTAD] " : "";
             let hpPct = Math.max(0, (t.currentHP / t.maxHP) * 100);
-            
-            // KORRIGERING: Skölden ritas nu bara ut om dess pool faktiskt är större än 0
             let shieldHTML = t.shieldPool > 0 ? `🛡️${t.shieldPool}` : '';
             
             let deSlotsHTML = '';
@@ -483,7 +485,6 @@ function uppdateraUXGranssnitt() {
                     if (aktivSubMeny === 'skills') {
                         subActionsEl.innerHTML = `<button class="action-node-btn" onclick="hanteraSpelarHandling('skills', ${teolog.id})"><span>⚡ SIGNATUR: ${teolog.deHandlingNamn}</span><span style="color:#00ccff;">-${teolog.deKostnad} DE</span></button>`;
                     } else if (aktivSubMeny === 'defend') {
-                        // KORRIGERING: Ändrat till teolog.klass (istället för trasiga t.klass) för att aktivera rutan felfritt!
                         let label = "Samla tankarna (Hela 5 HP)";
                         if (teolog.klass === "Herde") label = "Helande ord (Hela truppen)";
                         else if (teolog.klass === "Apostel") label = "Trons sköld (Skapa absorpsköld)";
