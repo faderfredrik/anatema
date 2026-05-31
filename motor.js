@@ -3,6 +3,7 @@
  * Branch: anatema-v2
  */
 
+// Globala speltillstånd
 let globalTeologer = [];
 let globalHeresier = [];
 let currentHeresy = null;
@@ -12,19 +13,24 @@ let activeQueueIndex = 0;
 let combatRound = 1;
 let playerName = "ANONYM";
 
+// Stridsmätare (De 6 mekaniska pelarna)
 let pHeresyLar = 0, pMaxLar = 0;
 let pHeresyStr = 0, pMaxStr = 0;
 let pHeresyLeg = 0, pMaxLeg = 0;
 let heresyFollowersPct = 40; 
 
+// Status-effekter från Lair Actions
 let truppDisadvantage = false;
 let truppParalyserad = false; 
 let aktivSubMeny = "attack";
 
+// Inspektören (Synodens tvåstegsval)
 let previewedTeolog = null;
 let previewedKostnad = 0;
 
-// KORRIGERING: Färgkodat loggsystem (Blått/Cyan för spelaren, rött för heresin)
+// ==========================================
+// 0. RETROSÄKRAD LOGGFUNKTION
+// ==========================================
 function logSpelBatalj(msg, typ = 'neutral') {
     const logBox = document.getElementById('hud-battle-log') || document.getElementById('disputation-log');
     if (logBox) {
@@ -34,6 +40,9 @@ function logSpelBatalj(msg, typ = 'neutral') {
 }
 window.logSpelBatalj = logSpelBatalj;
 
+// ==========================================
+// 1. INITIALISERING OCH DATALADDNING
+// ==========================================
 async function laddaSpelData() {
     try {
         const teologerRes = await fetch('teologer.json');
@@ -50,6 +59,9 @@ async function laddaSpelData() {
 }
 window.addEventListener('DOMContentLoaded', laddaSpelData);
 
+// ==========================================
+// 2. SKÄRMHANTERING & REGISTRERING
+// ==========================================
 function changeScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
     const targetScreen = document.getElementById(screenId);
@@ -85,6 +97,9 @@ function valjHeresiUtmaning(heresyId) {
     if (forstaTab) forstaTab.click();
 }
 
+// ==========================================
+// 3. SYNODENS GRÄNSSNITT (TVÅSTEGSVAL)
+// ==========================================
 function filtreraMentalitet(mentalitet, btn) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
@@ -178,6 +193,9 @@ function uppdateraSynodUI() {
     if (startBtn) startBtn.disabled = (selectedSquad.length === 0);
 }
 
+// ==========================================
+// 4. STRIDSMOTOR & AKTIVERING
+// ==========================================
 function initieraD20Strid() {
     if (selectedSquad.length === 0) return;
     pMaxLar = 150; pHeresyLar = pMaxLar;
@@ -218,7 +236,6 @@ function byggInitiativKedja() {
     activeQueueIndex = 0;
 }
 
-// KORRIGERING: Heresins ledare slår mot hela synoden samtidigt (Mass-AOE)
 function exekveraBossTur() {
     let levande = selectedSquad.filter(s => s.currentHP > 0);
     if (levande.length === 0) return;
@@ -246,13 +263,13 @@ function exekveraBossTur() {
     nastaTur();
 }
 
-// KORRIGERING: Dragkampen tilldelad fem stämningsfulla lägesbeskrivningar istället för rå märkning
 function exekveraLairAction() {
     let dragkampText = "";
     if (heresyFollowersPct <= 20) {
+        // KORRIGERING: "vågar" -> "väger"
         dragkampText = `Människor börjar tvivla på ${currentHeresy.boss} legitimitet. Heresins effekt är dämpad.`;
     } else if (heresyFollowersPct <= 40) {
-        dragkampText = `Debatten vågar svagt, men ortodoxins sanning håller massorna stabila.`;
+        dragkampText = `Debatten väger svagt, men ortodoxins sanning håller massorna stabila.`;
     } else if (heresyFollowersPct <= 60) {
         dragkampText = `Heresins villolärosor sprids bland de osäkra i folkmassan.`;
     } else if (heresyFollowersPct <= 80) {
@@ -266,13 +283,14 @@ function exekveraLairAction() {
     truppParalyserad = false;
 
     if (heresyFollowersPct <= 35) {
-        window.logSpelBatalj(`⚠️ ${currentHeresy.lairActions.drev}`, 'heresi');
+        // KORRIGERING: Lagt till kontext-tagg [Heresinamn] framför miljötexter
+        window.logSpelBatalj(`⚠️ [${currentHeresy.name}] ${currentHeresy.lairActions.drev}`, 'heresi');
         window.logSpelBatalj(` Truppen drabbas av Disadvantage (Retorisk nackdel: tvingas välja det sämsta av två tärningsslag).`, 'heresi');
         truppDisadvantage = true;
     } else if (heresyFollowersPct > 35 && heresyFollowersPct <= 75) {
         let xSkadaBase = Math.floor(heresyFollowersPct / 5) + 4; 
         let dynamicText = (currentHeresy.lairActions.han || "Truppen tar [X] HP.").replace("[X]", xSkadaBase);
-        window.logSpelBatalj(`💥 ${dynamicText}`, 'heresi');
+        window.logSpelBatalj(`💥 [${currentHeresy.name}] ${dynamicText}`, 'heresi');
         selectedSquad.forEach(t => {
             if (t.currentHP > 0) {
                 let nuvarandeSkada = xSkadaBase;
@@ -284,7 +302,7 @@ function exekveraLairAction() {
             }
         });
     } else {
-        window.logSpelBatalj(`🚨 KATASTROF! ${currentHeresy.lairActions.tidsanda}`, 'heresi');
+        window.logSpelBatalj(`🚨 [${currentHeresy.name}] ${currentHeresy.lairActions.tidsanda}`, 'heresi');
         truppParalyserad = true;
     }
     kontrolleraMatchSlut();
@@ -297,20 +315,20 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
 
     if (truppParalyserad) { window.logSpelBatalj(`${t.name} är paralyserad och kan inte tala!`, 'heresi'); nastaTur(); return; }
 
-    // KORRIGERING: Dränera DE omedelbart vid klick på Skills så att energin går förlorad även vid Nat 1-missar
+    // KORRIGERING: "försökas aktiveras" -> "försöker aktivera"
     if (handlingTyp === 'skills') {
         if (t.currentDE < t.deKostnad) { window.logSpelBatalj(`${t.name} saknar DE för ${t.deHandlingNamn}!`, 'neutral'); return; }
         t.currentDE -= t.deKostnad;
-        window.logSpelBatalj(`[SKILL] ${t.name} försöker aktiveras: "${t.deHandlingNamn}"!`, 'ortodox');
+        window.logSpelBatalj(`[SKILL] ${t.name} försöker aktivera: "${t.deHandlingNamn}"!`, 'ortodox');
     }
 
     let d20 = Math.floor(Math.random() * 20) + 1;
     if (truppDisadvantage) d20 = Math.min(d20, Math.floor(Math.random() * 20) + 1);
     
-    // Katastrofal miss (Nat 1) hantering
+    // KORRIGERING: Rättat kopiera-och-klistra bugg som hårdkodade "Tomas av Aquino" vid Nat 1
     if (d20 === 1) { 
         if (handlingTyp === 'skills') {
-            window.logSpelBatalj(`[NAT 1] Tomas av Aquino försöker aktivera "${t.deHandlingNamn}" men snubblar katastrofalt på orden! Den dogmatiska energin går förlorad i förvirringen.`, 'heresi');
+            window.logSpelBatalj(`[NAT 1] ${t.name} försöker aktivera "${t.deHandlingNamn}" men snubblar katastrofalt på orden! Den dogmatiska energin går förlorad i förvirringen.`, 'heresi');
         } else {
             window.logSpelBatalj(`[NAT 1] ${t.name} snubblar katastrofalt på orden! Handlingen misslyckas helt.`, 'heresi'); 
         }
@@ -325,7 +343,6 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
     if (handlingTyp === 'attack_laran') {
         if (currentHeresy.id === "pelagianism" && pHeresyLeg > 0) { window.logSpelBatalj(`[IMMUNITET] Skyddar deras Lära! Sänk LEGITIMITETEN först!`, 'heresi'); nastaTur(); return; }
         
-        // KORRIGERING: Kritiska träffar maximeras för att garantera ett starkt utfall
         let basTarning = (t.klass === "Lärare") ? (Math.floor(Math.random() * 8) + 1) : (Math.floor(Math.random() * 4) + 1);
         let modifierare = t.int - (harIkonoklastStraff ? 2 : 0);
         let skada = basTarning + modifierare;
@@ -367,7 +384,6 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
         window.logSpelBatalj(`${t.name} omvänder ${effekt}% av FÖLJARNA.`, 'ortodox');
         
     } else if (handlingTyp === 'skills') {
-        // KORRIGERING: Unika, klassanpassade och fullständigt dynamiska uträkningar för varje enskild Skill
         if (t.klass === "Lärare") {
             let dmg = 25 + (t.int * 3);
             pHeresyLar = Math.max(0, pHeresyLar - dmg);
@@ -379,7 +395,6 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
         } else if (t.klass === "Herde") {
             let legDmg = 20 + (t.wis * 2);
             pHeresyLeg = Math.max(0, pHeresyLeg - legDmg);
-            // Helig olja slår automatiskt mot den i synoden som har lägst HP
             let levande = selectedSquad.filter(s => s.currentHP > 0);
             let sårbar = levande.reduce((min, curr) => curr.currentHP < min.currentHP ? curr : min, levande[0]);
             sårbar.currentHP = Math.min(sårbar.maxHP, sårbar.currentHP + 20);
@@ -387,7 +402,6 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
         } else if (t.klass === "Apostel") {
             let strDmg = 15 + (t.str * 2);
             pHeresyStr = Math.max(0, pHeresyStr - strDmg);
-            // Skölden läggs på den med lägst HP
             let levande = selectedSquad.filter(s => s.currentHP > 0);
             let sårbar = levande.reduce((min, curr) => curr.currentHP < min.currentHP ? curr : min, levande[0]);
             sårbar.shieldPool += 20;
@@ -408,7 +422,7 @@ function hanteraSpelarHandling(handlingTyp, teologId) {
             window.logSpelBatalj(`${t.name} reser Trons sköld framför ${sårbar.name} som skyddar mot ${skold} skada.`, 'ortodox');
         } else {
             t.currentHP = Math.min(t.maxHP, t.currentHP + 5);
-            window.logSpelBatalj(`${t.name} samlar sig i bön och helar 5 HP.`, 'ortodox');
+            window.logSpelBatalj(`${t.name} samlar sig och helar 5 HP.`, 'ortodox');
         }
     }
     kontrolleraMatchSlut();
